@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="APP_NAME">${sys:logging.log4j2.config.wms.app-name}</Property>
+        <Property name="PATTERN_LAYOUT">%date{${LOG_DATEFORMAT_PATTERN}} %level %logger{1.1.*} [%thread] %m%throwable%n</Property>
+        <Property name="LOG_DATEFORMAT_PATTERN" value="yyyy-MM-dd HH:mm:ss,SSS" />
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${PATTERN_LAYOUT}" />
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+
+</Configuration>
