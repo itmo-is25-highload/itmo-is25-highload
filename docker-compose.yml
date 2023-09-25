@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  storage:
+    ports:
+      #PLACEHOLDER
+      - "8000:8000"
+
+    build:
+      args:
+        VOLUME: "PLACEHOLDER"
+        STORAGE: "PLACEHOLDER"
+
+    command: java -jar ./server-component-0.0.1-SNAPSHOT.jar
+
+  client:
+    environment:
+      SERVICE_URL: "PLACEHOLDER"
+
+
