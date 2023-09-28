@@ -21,6 +21,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    implementation("org.springframework:spring-webflux")
+
     // Logger
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
     compileOnlyApi("io.github.oshai:kotlin-logging-jvm:5.1.0")
