@@ -6,8 +6,8 @@ import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import ru.itmo.storage.client.StorageClient
-import ru.itmo.storage.client.exception.NoServerResponseException
 import ru.itmo.storage.client.exception.BadServerResponseException
+import ru.itmo.storage.client.exception.NoServerResponseException
 import ru.itmo.storage.client.response.ErrorResponse
 
 @Component
@@ -17,7 +17,7 @@ class StorageClientImpl(
 
     override fun get(key: String): String {
         val requestSpec = webClient.get()
-            .uri("/keys/$key")
+            .uri { uriBuilder -> uriBuilder.path("/keys/{key}").build(key) }
 
         return performRequest(requestSpec)
             .bodyToMono(String::class.java)
@@ -26,7 +26,7 @@ class StorageClientImpl(
 
     override fun set(key: String, value: String) {
         val requestSpec = webClient.put()
-            .uri("/keys/$key?value=$value")
+            .uri { uriBuilder -> uriBuilder.path("/keys/{key}").queryParam("value", value).build(key) }
 
         performRequest(requestSpec)
             .toBodilessEntity()
@@ -41,7 +41,7 @@ class StorageClientImpl(
             { response -> errorResponseToMono(response) }
         .onStatus({ httpStatus -> httpStatus == HttpStatus.BAD_REQUEST })
             { response -> errorResponseToMono(response) }
-        .onStatus({ httpStatus -> httpStatus == HttpStatus.UNPROCESSABLE_ENTITY }) 
+        .onStatus({ httpStatus -> httpStatus == HttpStatus.UNPROCESSABLE_ENTITY })
             { response -> errorResponseToMono(response) }
         .onStatus({ httpStatus -> httpStatus == HttpStatus.SERVICE_UNAVAILABLE })
             { response -> errorResponseToMono(response) }
