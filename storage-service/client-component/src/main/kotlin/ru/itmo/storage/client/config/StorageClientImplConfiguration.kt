@@ -1,18 +1,19 @@
 package ru.itmo.storage.client.config
 
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.client.WebClient
 import ru.itmo.storage.client.impl.properties.StorageClientImplProperties
 
-// TODO: add autoconfiguration
 @Configuration
 @EnableConfigurationProperties(StorageClientImplProperties::class)
+@ConditionalOnProperty(prefix = "storage.client.baseUrl")
 class StorageClientImplConfiguration(
-    private val storageClientProperties: StorageClientImplProperties
+    @Autowired private val storageClientProperties: StorageClientImplProperties
 ) {
-
     @Bean
     fun webClient(): WebClient {
         return WebClient.builder()
