@@ -28,6 +28,7 @@ dependencies {
 
     // Spring boot
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // Logger
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
