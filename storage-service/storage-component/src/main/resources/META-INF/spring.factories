@@ -1,0 +1,3 @@
+#Auto-configuration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+ru.itmo.storage.storage.config.FileSystemKeyValueRepositoryConfiguration
