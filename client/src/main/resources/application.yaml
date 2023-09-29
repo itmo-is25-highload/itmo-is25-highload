@@ -1,0 +1,8 @@
+storage:
+  client:
+    type: ${STORAGE_CLIENT_TYPE:spring}
+    base-path: ${STORAGE_CLIENT_BASE_PATH:http://localhost:8080/}
+
+spring:
+  main:
+    web-application-type: none

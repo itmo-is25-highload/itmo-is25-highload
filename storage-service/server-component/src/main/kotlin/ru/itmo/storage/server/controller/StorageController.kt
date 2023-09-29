@@ -3,7 +3,11 @@ package ru.itmo.storage.server.controller
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import ru.itmo.storage.storage.KeyValueRepository
 
 @RestController
@@ -20,7 +24,6 @@ class StorageController(
         @NotBlank
         key: String,
     ): String {
-
         val value: String = keyValueRepository.get(key)
         log.info { "Got value {$value} by key {$key}" }
 
@@ -33,11 +36,10 @@ class StorageController(
         @NotBlank
         key: String,
         @RequestParam
-        value: String
+        value: String,
     ) {
         log.info { "Set value {$value} to key {$key}" }
 
         keyValueRepository.set(key, value)
     }
 }
-
