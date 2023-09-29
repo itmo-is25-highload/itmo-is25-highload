@@ -4,6 +4,7 @@ plugins {
 
 group = "ru.itmo.storage"
 version = "1.0-SNAPSHOT"
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
