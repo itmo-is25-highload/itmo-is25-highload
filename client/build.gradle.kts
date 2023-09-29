@@ -6,11 +6,16 @@ plugins {
     kotlin("jvm") version "1.8.10"
     kotlin("plugin.spring") version "1.8.10"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.10"
+    application
 }
 
 group = "ru.itmo.client"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
+
+application{
+    mainClass.set("ru.itmo.client.ClientAppKt")
+}
 
 repositories {
     mavenCentral()

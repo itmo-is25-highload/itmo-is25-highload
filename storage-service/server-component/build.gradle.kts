@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.8.10"
     kotlin("plugin.spring") version "1.8.10"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.10"
+    application
 }
 
 group = "ru.itmo.storage.server"
@@ -20,6 +21,10 @@ configurations {
     implementation.configure {
         // exclude("org.apache.tomcat")
     }
+}
+
+application{
+    mainClass.set("ru.itmo.storage.server.StorageServerAppKt")
 }
 
 dependencies {

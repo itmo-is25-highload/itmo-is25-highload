@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("io.spring.dependency-management") version "1.1.0"
@@ -57,4 +58,14 @@ allOpen {
         "org.springframework.stereotype.Repository",
         "org.springframework.stereotype.Configuration",
     )
+}
+
+
+// Else asks to provide the main class for this component
+tasks.withType<BootJar>{
+    enabled = false
+}
+
+tasks.withType<Jar>{
+    enabled = true
 }
