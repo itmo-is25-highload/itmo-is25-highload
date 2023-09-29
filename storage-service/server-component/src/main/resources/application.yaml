@@ -1,0 +1,5 @@
+storage:
+  component:
+    filesystem:
+      storage-path: ${STORAGE_PATH:data}
+      type: local

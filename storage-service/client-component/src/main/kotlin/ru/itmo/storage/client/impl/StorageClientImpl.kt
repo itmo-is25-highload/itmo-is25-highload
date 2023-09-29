@@ -12,7 +12,7 @@ import ru.itmo.storage.client.response.ErrorResponse
 
 @Component
 class StorageClientImpl(
-    private val webClient: WebClient
+    private val webClient: WebClient,
 ) : StorageClient {
 
     override fun get(key: String): String {
@@ -34,24 +34,19 @@ class StorageClientImpl(
     }
 
     private fun <S : WebClient.RequestHeadersSpec<S>?> performRequest(
-        requestBodySpec: WebClient.RequestHeadersSpec<S>
+        requestBodySpec: WebClient.RequestHeadersSpec<S>,
     ) = requestBodySpec
         .retrieve()
-        .onStatus({ httpStatus -> httpStatus == HttpStatus.NOT_FOUND })
-            { response -> errorResponseToMono(response) }
-        .onStatus({ httpStatus -> httpStatus == HttpStatus.BAD_REQUEST })
-            { response -> errorResponseToMono(response) }
-        .onStatus({ httpStatus -> httpStatus == HttpStatus.UNPROCESSABLE_ENTITY })
-            { response -> errorResponseToMono(response) }
-        .onStatus({ httpStatus -> httpStatus == HttpStatus.SERVICE_UNAVAILABLE })
-            { response -> errorResponseToMono(response) }
-        .onStatus({ httpStatus -> httpStatus == HttpStatus.INTERNAL_SERVER_ERROR })
-            { response -> errorResponseToMono(response) }
+        .onStatus({ httpStatus -> httpStatus == HttpStatus.NOT_FOUND }) { response -> errorResponseToMono(response) }
+        .onStatus({ httpStatus -> httpStatus == HttpStatus.BAD_REQUEST }) { response -> errorResponseToMono(response) }
+        .onStatus({ httpStatus -> httpStatus == HttpStatus.UNPROCESSABLE_ENTITY }) { response -> errorResponseToMono(response) }
+        .onStatus({ httpStatus -> httpStatus == HttpStatus.SERVICE_UNAVAILABLE }) { response -> errorResponseToMono(response) }
+        .onStatus({ httpStatus -> httpStatus == HttpStatus.INTERNAL_SERVER_ERROR }) { response -> errorResponseToMono(response) }
 
     private fun errorResponseToMono(response: ClientResponse): Mono<BadServerResponseException> =
         response.bodyToMono(ErrorResponse::class.java).map { body ->
             BadServerResponseException(
-                body.message
+                body.message,
             )
         }
 }
