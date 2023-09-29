@@ -1,0 +1,5 @@
+#Auto-configuration
+
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+ru.itmo.storage.client.config.StorageClientImplConfiguration\
+ru.itmo.storage.client.config.StorageClientStubConfiguration
