@@ -2,8 +2,6 @@ FROM amazoncorretto:17-al2023-headless as builder
 
 WORKDIR /app
 
-RUN chmod +x ./gradlew
-
 COPY . .
 
 RUN chmod +x ./gradlew \
