@@ -3,18 +3,18 @@ version: "3"
 services:
   storage:
     ports:
-      #PLACEHOLDER
       - "8000:8000"
 
-    build:
-      args:
-        VOLUME: "PLACEHOLDER"
-        STORAGE: "PLACEHOLDER"
+    image:
+      storage-service:0.0.1
 
     command: java -jar ./server-component-0.0.1-SNAPSHOT.jar
 
   client:
+    stdin_open: true
+    tty: true
+    image: client:0.0.1
     environment:
-      SERVICE_URL: "PLACEHOLDER"
+      STORAGE_CLIENT_BASE_PATH: http://storage:8080
 
 

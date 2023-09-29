@@ -1,6 +1,6 @@
 #!/bin/sh
 
-docker build -t storage-service -f ./storage-service/Dockerfile . \
-&& docker build -t client -f ./client/Dockerfile . \
+docker build -t storage-service:0.0.1  -f ./storage-service/Dockerfile . \
+&& docker build  -t client:0.0.1 -f ./client/Dockerfile . \
 && docker compose build \
 && docker compose up
