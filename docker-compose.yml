@@ -3,12 +3,10 @@ version: "3"
 services:
   storage:
     ports:
-      - "8000:8000"
+      - "8080:8080"
 
     image:
       storage-service:0.0.1
-
-    command: java -jar ./server-component-0.0.1-SNAPSHOT.jar
 
   client:
     stdin_open: true
