@@ -12,3 +12,7 @@ FROM amazoncorretto:17-al2023-headless
 WORKDIR /executable
 
 COPY --from=builder /app/client/build/libs/client-0.0.1-SNAPSHOT.jar .
+
+EXPOSE 8080
+
+ENTRYPOINT tail -f /dev/null
