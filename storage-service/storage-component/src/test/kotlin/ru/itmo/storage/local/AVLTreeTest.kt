@@ -2,7 +2,10 @@ package ru.itmo.storage.local
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import ru.itmo.storage.storage.lsm.avl.AVL_SIZE_BASE_BYTES
+import ru.itmo.storage.storage.lsm.avl.CHAR_SIZE_BYTES
 import ru.itmo.storage.storage.lsm.avl.DefaultAVLTree
+import ru.itmo.storage.storage.lsm.avl.NODE_SIZE_BASE_BYTES
 
 class AVLTreeTest {
     @Test
@@ -18,8 +21,24 @@ class AVLTreeTest {
             }
             Assertions.assertEquals(null, tree.find("-1"))
 
+            val expectedSize = 7 * (6 * CHAR_SIZE_BYTES + NODE_SIZE_BASE_BYTES) + AVL_SIZE_BASE_BYTES
+            Assertions.assertEquals(expectedSize, tree.sizeInBytes)
+
             println("Permutation $permutation success")
         }
+    }
+
+    @Test
+    fun sizeTest() {
+        val tree = DefaultAVLTree()
+
+        val elements = listOf("1", "2", "3", "4", "5", "6", "7")
+        elements.forEach { tree.upsert(it, "") }
+
+        tree.upsert("1", "")
+
+        val expectedSize = 7 * (CHAR_SIZE_BYTES + NODE_SIZE_BASE_BYTES) + AVL_SIZE_BASE_BYTES
+        Assertions.assertEquals(expectedSize, tree.sizeInBytes)
     }
 }
 

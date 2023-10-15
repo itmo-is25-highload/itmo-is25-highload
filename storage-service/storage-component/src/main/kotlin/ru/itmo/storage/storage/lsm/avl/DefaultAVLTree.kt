@@ -3,6 +3,13 @@ package ru.itmo.storage.storage.lsm.avl
 import ru.itmo.storage.storage.lsm.avl.AVLTree.Entry
 import kotlin.math.max
 
+const val LINK_SIZE_BYTES = 8L
+const val CHAR_SIZE_BYTES = 2L
+const val INT_SIZE_BYTES = 4L
+const val LONG_SIZE_BYTES = 8L
+const val NODE_SIZE_BASE_BYTES = LINK_SIZE_BYTES * 4 + INT_SIZE_BYTES
+const val AVL_SIZE_BASE_BYTES = LINK_SIZE_BYTES + LONG_SIZE_BYTES
+
 class DefaultAVLTree : AVLTree {
     private data class Node(
         val key: String,
@@ -11,22 +18,25 @@ class DefaultAVLTree : AVLTree {
         var leftChild: Node? = null,
         var rightChild: Node? = null,
     ) {
-        val balance: Int = (leftChild?.height ?: 0) - (rightChild?.height ?: 0)
+        val balance: Int
+            get() = (leftChild?.height ?: 0) - (rightChild?.height ?: 0)
     }
 
     private var root: Node? = null
 
-    override val sizeInBytes: Long
-        get() = TODO("Not yet implemented")
+    override var sizeInBytes: Long = AVL_SIZE_BASE_BYTES
+        private set
 
     override fun upsert(key: String, value: String) {
         val existing = search(root, key)
 
         if (existing != null) {
+            beforeUpdate(existing.value, value)
             existing.value = value
             return
         }
 
+        beforeInsert(key, value)
         root = insert(root, key, value)
     }
 
@@ -38,6 +48,17 @@ class DefaultAVLTree : AVLTree {
 
     override fun orderedEntries(): List<Entry> {
         TODO("Not yet implemented")
+    }
+
+    private fun beforeUpdate(oldValue: String, newValue: String) {
+        sizeInBytes -= oldValue.length * CHAR_SIZE_BYTES
+        sizeInBytes += newValue.length * CHAR_SIZE_BYTES
+    }
+
+    private fun beforeInsert(key: String, value: String) {
+        sizeInBytes += NODE_SIZE_BASE_BYTES
+        sizeInBytes += key.length * CHAR_SIZE_BYTES
+        sizeInBytes += value.length * CHAR_SIZE_BYTES
     }
 
     private fun search(tile: Node?, key: String): Node? {
