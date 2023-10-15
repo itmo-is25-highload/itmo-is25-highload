@@ -5,6 +5,11 @@ package ru.itmo.storage.storage.lsm.avl
  */
 interface AVLTree {
 
+    data class Entry(
+        val key: String,
+        val value: String,
+    )
+
     /**
      * Пропертя для получения размера дерева в байтах
      *  считается приблизительно
@@ -40,4 +45,9 @@ interface AVLTree {
      *  нужно для асинхронной обработки сохранения дерева в SSTable
      */
     fun copy(): AVLTree
+
+    /**
+     * Метод для получения всех значений в упорядоченном по возрастанию списке
+     */
+    fun orderedEntries(): List<Entry>
 }

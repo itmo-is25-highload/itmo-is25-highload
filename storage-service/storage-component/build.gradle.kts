@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("io.spring.dependency-management") version "1.1.0"
@@ -32,6 +31,7 @@ dependencies {
 
     // Kotlin libraries
     implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
@@ -58,14 +58,4 @@ allOpen {
         "org.springframework.stereotype.Repository",
         "org.springframework.stereotype.Configuration",
     )
-}
-
-
-// Else asks to provide the main class for this component
-tasks.withType<BootJar>{
-    enabled = false
-}
-
-tasks.withType<Jar>{
-    enabled = true
 }
