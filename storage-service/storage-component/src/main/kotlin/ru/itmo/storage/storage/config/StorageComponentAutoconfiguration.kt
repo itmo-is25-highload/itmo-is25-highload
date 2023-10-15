@@ -6,13 +6,20 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import ru.itmo.storage.storage.local.FileSystemKeyValueRepository
 import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
+import ru.itmo.storage.storage.lsm.LsmTreeKeyValueRepository
 
 @Configuration
-@EnableConfigurationProperties(FileSystemRepositoryProperties::class)
-class FileSystemKeyValueRepositoryConfiguration {
+class StorageComponentAutoconfiguration {
     @Import(
         FileSystemKeyValueRepository::class,
     )
+    @EnableConfigurationProperties(FileSystemRepositoryProperties::class)
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "local", matchIfMissing = false)
     class FileSystemKeyValueRepositoryLocalConfiguration
+
+    @Import(
+        LsmTreeKeyValueRepository::class,
+    )
+    @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "lsm", matchIfMissing = false)
+    class LsmTreeKeyValueRepositoryLocalConfiguration
 }

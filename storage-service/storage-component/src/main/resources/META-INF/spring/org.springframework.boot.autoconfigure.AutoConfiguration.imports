@@ -1,1 +1,1 @@
-ru.itmo.storage.storage.config.FileSystemKeyValueRepositoryConfiguration
+ru.itmo.storage.storage.config.StorageComponentAutoconfiguration
