@@ -16,6 +16,7 @@ class AVLTreeTest {
             val tree = DefaultAVLTree()
 
             permutation.forEach { tree.upsert(it, "value") }
+
             permutation.forEach {
                 Assertions.assertEquals("value", tree.find(it))
             }
