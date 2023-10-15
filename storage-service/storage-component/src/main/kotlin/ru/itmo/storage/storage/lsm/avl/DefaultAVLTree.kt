@@ -20,6 +20,11 @@ class DefaultAVLTree : AVLTree {
     ) {
         val balance: Int
             get() = (leftChild?.height ?: 0) - (rightChild?.height ?: 0)
+
+        fun deepCopy(): Node = copy(
+            leftChild = leftChild?.deepCopy(),
+            rightChild = rightChild?.deepCopy(),
+        )
     }
 
     private var root: Node? = null
@@ -43,7 +48,11 @@ class DefaultAVLTree : AVLTree {
     override fun find(key: String): String? = search(root, key)?.value
 
     override fun copy(): AVLTree {
-        TODO("Not yet implemented")
+        val copy = DefaultAVLTree()
+        copy.root = root?.deepCopy()
+        copy.sizeInBytes = sizeInBytes
+
+        return copy
     }
 
     override fun orderedEntries(): List<Entry> {
