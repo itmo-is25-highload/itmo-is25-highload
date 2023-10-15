@@ -40,6 +40,23 @@ class AVLTreeTest {
         val expectedSize = 7 * (CHAR_SIZE_BYTES + NODE_SIZE_BASE_BYTES) + AVL_SIZE_BASE_BYTES
         Assertions.assertEquals(expectedSize, tree.sizeInBytes)
     }
+
+    @Test
+    fun copyTest() {
+        val tree = DefaultAVLTree()
+
+        val elements = listOf("1", "2", "3", "4", "5", "6", "7")
+        elements.forEach { tree.upsert(it, "") }
+
+        val copy = tree.copy()
+        tree.upsert("key", "value")
+
+        elements.forEach {
+            Assertions.assertEquals("", tree.find(it))
+        }
+        Assertions.assertNull(copy.find("key"))
+        Assertions.assertEquals("value", tree.find("key"))
+    }
 }
 
 private fun <E> List<E>.permutations(builtSequence: List<E> = listOf()): List<List<E>> =
