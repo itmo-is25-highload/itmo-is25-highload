@@ -8,7 +8,7 @@ import ru.itmo.storage.storage.compression.DeflateCompressionService
 import ru.itmo.storage.storage.compression.properties.DeflateCompressionServiceProperties
 import ru.itmo.storage.storage.local.FileSystemKeyValueRepository
 import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
-import ru.itmo.storage.storage.lsm.DefaultMemtableFlushService
+import ru.itmo.storage.storage.lsm.DefaultMemtableService
 import ru.itmo.storage.storage.lsm.LsmTreeKeyValueRepository
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 
@@ -35,9 +35,9 @@ class StorageComponentAutoconfiguration {
     class DeflateCompressionServiceConfiguration
 
     @Import(
-        DefaultMemtableFlushService::class,
+        DefaultMemtableService::class,
     )
     @EnableConfigurationProperties(LsmRepositoryFlushProperties::class)
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "lsm", matchIfMissing = false)
-    class LsmRepositoryFlushConfiguration
+    class LsmRepositoryMemtableServiceConfiguration
 }
