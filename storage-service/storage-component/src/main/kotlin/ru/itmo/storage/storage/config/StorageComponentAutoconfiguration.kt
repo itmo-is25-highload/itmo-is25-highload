@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Import
 import ru.itmo.storage.storage.local.FileSystemKeyValueRepository
 import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
 import ru.itmo.storage.storage.lsm.LsmTreeKeyValueRepository
+import ru.itmo.storage.wal.WalLoggingAspect
 
 @Configuration
 class StorageComponentAutoconfiguration {
@@ -22,4 +23,7 @@ class StorageComponentAutoconfiguration {
     )
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "lsm", matchIfMissing = false)
     class LsmTreeKeyValueRepositoryLocalConfiguration
+
+    @Import(WalLoggingAspect::class)
+    class WalLoggingAspectConfiguration
 }
