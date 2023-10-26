@@ -24,8 +24,9 @@ class DefaultMemtableService(
     private val compressionService: CompressionService,
 ) : MemtableService {
 
-    override fun flush(memtable: AVLTree) {
-        val tableDirPath = getDirectoryPath().createDirectory()
+    override fun flushMemtableToDisk(memtable: AVLTree): UUID {
+        val directoryId = getDirectoryId()
+        val tableDirPath = Path.of("${properites.tableParentDir}/$directoryId").createDirectory()
         val table = Files.createFile(Path.of("$tableDirPath/table"))
         val index = Files.createFile(Path.of("$tableDirPath/index"))
 
@@ -34,16 +35,18 @@ class DefaultMemtableService(
                 writeToDisk(tWriter, iWriter, memtable)
             }
         }
+
+        return directoryId
     }
 
-    override fun load(tableId: String): AVLTree {
+    override fun loadIndex(tableId: String): AVLTree {
         val index = Path.of("${properites.tableParentDir}/$tableId/index")
         index.inputStream().buffered().use { iReader ->
             return readIndex(iReader)
         }
     }
 
-    override fun loadBlock(memtable: AVLTree, tableId: String, blockKey: String): List<Pair<String, String>> {
+    override fun loadBlockByKey(memtable: AVLTree, tableId: String, blockKey: String): List<Pair<String, String>> {
         val table = Path.of("${properites.tableParentDir}/$tableId/table")
         val index = Path.of("${properites.tableParentDir}/$tableId/index")
         val entities = memtable.orderedEntries()
@@ -76,7 +79,7 @@ class DefaultMemtableService(
         val tree: AVLTree = DefaultAVLTree()
         val baos = ByteArrayOutputStream()
 
-        val buffer = ByteArray(4096)
+        val buffer = ByteArray(properites.readBufferSize.toInt())
 
         var currentReadSize = indexReader.read(buffer)
         var totalBytesRead = currentReadSize
@@ -97,41 +100,43 @@ class DefaultMemtableService(
         return tree
     }
 
-    private fun getDirectoryPath(): Path {
+    private fun getDirectoryId(): UUID {
         var dirId = UUID.randomUUID()
         val tablePathPrefix = properites.tableParentDir
         while (Path.of("$tablePathPrefix/$dirId").exists())
             dirId = UUID.randomUUID()
 
-        return Path.of("$tablePathPrefix/$dirId")
+        return dirId
     }
 
     private fun writeToDisk(tableWriter: OutputStream, indexWriter: OutputStream, memtable: AVLTree) {
         val entities = memtable.orderedEntries()
-        var lastBlockKey: String? = null
-
-        var indexOffset: Long = 0
-        var blockStartOffset: Long = 0
-        var currentBlockSize: Long = 0
-
-        val baos = ByteArrayOutputStream()
-        var endOfBlock = true
 
         if (entities.isEmpty()) {
             return
         }
 
+        val baos = ByteArrayOutputStream()
+
+        var indexOffset: Long = 0
+        var blockStartOffset: Long = 0
+        var currentBlockSize: Long = 0
+
+        var firstEntry = true
+        var currentIndexKey: String? = null
+
         for (i in entities.indices) {
             val key = entities[i].key
             val value = entities[i].value
 
-            if (endOfBlock) {
-                lastBlockKey = key
+            if (firstEntry) {
+                currentBlockSize = 0
+                currentIndexKey = key
                 blockStartOffset = indexOffset
-                endOfBlock = false
+                firstEntry = false
             }
 
-            val currentEntry = "${key.escapeEntry()}$properites.keyValueDelimiter${value.escapeEntry()}$properites.blockEntryDelimiter".toByteArray()
+            val currentEntry = "${key.escapeEntry()}${properites.keyValueDelimiter}${value.escapeEntry()}${properites.entryDelimiter}".toByteArray()
             baos.write(currentEntry, currentBlockSize.toInt(), currentEntry.size)
 
             currentBlockSize += currentEntry.size
@@ -139,10 +144,9 @@ class DefaultMemtableService(
 
             if (currentBlockSize >= properites.blockSizeInBytes) {
                 val compressedBlock = compressionService.compress(baos.toByteArray())
-                val indexEntry = "${key.escapeEntry()}$properites.keyValueDelimiter$indexOffset$properites.blockEntryDelimiter"
+                val indexEntry = "${currentIndexKey?.escapeEntry()}${properites.keyValueDelimiter}${indexOffset}${properites.entryDelimiter}"
 
-                endOfBlock = true
-                currentBlockSize = 0
+                firstEntry = true
 
                 tableWriter.write(compressedBlock)
                 indexWriter.write(indexEntry.toByteArray())
@@ -151,12 +155,13 @@ class DefaultMemtableService(
             }
         }
 
-        if (endOfBlock) {
+        // Means that the last entry was loaded with the last block and there was no hanging entries
+        if (firstEntry) {
             return
         }
 
         tableWriter.write(compressionService.compress(baos.toByteArray()))
-        indexWriter.write("${lastBlockKey?.escapeEntry()}$properites.keyValueDelimiter$blockStartOffset$properites.blockEntryDelimiter".toByteArray())
+        indexWriter.write("${currentIndexKey?.escapeEntry()}${properites.keyValueDelimiter}${blockStartOffset}${properites.entryDelimiter}".toByteArray())
     }
 
     private fun String.escape(delimiter: String): String {
@@ -175,7 +180,7 @@ class DefaultMemtableService(
         private val iterator = byteArray.toString().iterator()
         private val sb = StringBuilder()
 
-        public fun tokenize(): List<Pair<String, String>> {
+        fun tokenize(): List<Pair<String, String>> {
             if (isDone) {
                 return keyValueList
             }

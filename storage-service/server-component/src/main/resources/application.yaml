@@ -11,4 +11,5 @@ storage:
       keyValueDelimiter: ":"
       blockSizeInBytes: 65536
       entryDelimiter: ";"
+      readBufferSize: 4096
 

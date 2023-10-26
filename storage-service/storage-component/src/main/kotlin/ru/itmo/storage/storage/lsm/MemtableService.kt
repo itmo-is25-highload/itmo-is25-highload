@@ -1,11 +1,12 @@
 package ru.itmo.storage.storage.lsm
 
 import ru.itmo.storage.storage.lsm.avl.AVLTree
+import java.util.UUID
 
 interface MemtableService {
-    fun flush(memtable: AVLTree)
+    fun flushMemtableToDisk(memtable: AVLTree): UUID
 
-    fun load(tableId: String): AVLTree
+    fun loadIndex(tableId: String): AVLTree
 
-    fun loadBlock(memtable: AVLTree, tableId: String, blockKey: String): List<Pair<String, String>>
+    fun loadBlockByKey(memtable: AVLTree, tableId: String, blockKey: String): List<Pair<String, String>>
 }

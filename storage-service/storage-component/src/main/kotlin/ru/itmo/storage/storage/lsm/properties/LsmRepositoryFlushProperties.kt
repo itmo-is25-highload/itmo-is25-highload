@@ -15,4 +15,6 @@ class LsmRepositoryFlushProperties(
 
     @NotBlank
     val entryDelimiter: String,
+
+    val readBufferSize: Long,
 )
