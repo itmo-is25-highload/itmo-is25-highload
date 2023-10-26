@@ -11,6 +11,9 @@ import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
 import ru.itmo.storage.storage.lsm.DefaultMemtableService
 import ru.itmo.storage.storage.lsm.LsmTreeKeyValueRepository
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
+import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
+import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
+import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
 
 @Configuration
 class StorageComponentAutoconfiguration {
@@ -23,7 +26,10 @@ class StorageComponentAutoconfiguration {
 
     @Import(
         LsmTreeKeyValueRepository::class,
+        SSTableManagerImpl::class,
+        LocalSSTableLoader::class,
     )
+    @EnableConfigurationProperties(LsmTreeRepositoryProperties::class)
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "lsm", matchIfMissing = false)
     class LsmTreeKeyValueRepositoryLocalConfiguration
 

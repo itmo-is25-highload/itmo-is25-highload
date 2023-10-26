@@ -1,6 +1,7 @@
 package ru.itmo.storage.storage.lsm.avl
 
 import ru.itmo.storage.storage.lsm.avl.AVLTree.Entry
+import kotlin.collections.ArrayList
 import kotlin.math.max
 
 const val LINK_SIZE_BYTES = 8L
@@ -56,7 +57,19 @@ class DefaultAVLTree : AVLTree {
     }
 
     override fun orderedEntries(): List<Entry> {
-        TODO("Not yet implemented")
+        val ans: MutableList<Entry> = ArrayList()
+        inorderTraversal(ans, root)
+
+        return ans
+    }
+
+    private fun inorderTraversal(entries: MutableList<Entry>, node: Node?) {
+        if (node == null) {
+            return
+        }
+        inorderTraversal(entries, node.leftChild)
+        entries.add(Entry(node.key, node.value))
+        inorderTraversal(entries, node.rightChild)
     }
 
     private fun beforeUpdate(oldValue: String, newValue: String) {

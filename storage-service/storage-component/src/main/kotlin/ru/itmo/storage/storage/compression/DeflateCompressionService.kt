@@ -11,13 +11,11 @@ class DeflateCompressionService(private val properties: DeflateCompressionServic
     override fun compress(data: ByteArray): ByteArray {
         val deflater = Deflater()
         deflater.setInput(data)
+        deflater.finish()
         val buffer = ByteArray(properties.allocatedBufferSize)
         val baos = ByteArrayOutputStream()
-
-        while (!deflater.finished()) {
-            val compressedSize = deflater.deflate(buffer)
-            baos.write(buffer, 0, compressedSize)
-        }
+        val compressedSize = deflater.deflate(buffer)
+        baos.write(buffer, 0, compressedSize)
 
         return baos.toByteArray()
     }
@@ -27,11 +25,8 @@ class DeflateCompressionService(private val properties: DeflateCompressionServic
         inflater.setInput(compressedData)
         val buffer = ByteArray(properties.allocatedBufferSize)
         val baos = ByteArrayOutputStream()
-
-        while (!inflater.finished()) {
-            val inflatedSize = inflater.inflate(buffer)
-            baos.write(buffer, 0, inflatedSize)
-        }
+        val inflatedSize = inflater.inflate(buffer)
+        baos.write(buffer, 0, inflatedSize)
 
         return baos.toByteArray()
     }
