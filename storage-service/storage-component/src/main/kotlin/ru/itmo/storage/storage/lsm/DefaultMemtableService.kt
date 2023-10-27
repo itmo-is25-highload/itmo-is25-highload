@@ -9,6 +9,7 @@ import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.lang.StringBuilder
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.UUID
@@ -71,7 +72,7 @@ class DefaultMemtableService(
         tableReader.read(buffer)
 
         val decompressed = compressionService.decompress(buffer)
-        val tokenizerMachine = TokenizerMachine(decompressed)
+        val tokenizerMachine = TokenizerMachine(decompressed, properites.keyValueDelimiter, properites.entryDelimiter)
         return tokenizerMachine.tokenize()
     }
 
@@ -84,12 +85,12 @@ class DefaultMemtableService(
         var currentReadSize = indexReader.read(buffer)
         var totalBytesRead = currentReadSize
         while (currentReadSize != -1) {
-            baos.write(buffer, totalBytesRead, currentReadSize)
-            totalBytesRead += currentReadSize
+            baos.write(buffer, 0, currentReadSize)
             currentReadSize = indexReader.read(buffer)
+            totalBytesRead += currentReadSize
         }
 
-        val tokenizer = TokenizerMachine(baos.toByteArray())
+        val tokenizer = TokenizerMachine(baos.toByteArray(), properites.keyValueDelimiter, properites.keyValueDelimiter)
         val tokenizedIndex = tokenizer.tokenize()
 
         for (token in tokenizedIndex) {
@@ -143,7 +144,7 @@ class DefaultMemtableService(
 
             if (currentBlockSize >= properites.blockSizeInBytes) {
                 val compressedBlock = compressionService.compress(baos.toByteArray())
-                val indexEntry = "${currentIndexKey?.escapeEntry()}${properites.keyValueDelimiter}${indexOffset}${properites.entryDelimiter}"
+                val indexEntry = "${currentIndexKey?.escapeEntry()}${properites.keyValueDelimiter}$indexOffset${properites.entryDelimiter}"
 
                 firstEntry = true
 
@@ -171,12 +172,14 @@ class DefaultMemtableService(
         return this.escape("\\").escape(properites.keyValueDelimiter).escape(properites.entryDelimiter)
     }
 
-    private class TokenizerMachine(byteArray: ByteArray) {
+    private class TokenizerMachine(byteArray: ByteArray, private val keyValueDelimiter: String, private val entryDelimiter: String) {
         private var isDone: Boolean = false
         private var isKey: Boolean = true
         private var isPreviousCharEscape: Boolean = false
         private var keyValueList = mutableListOf<Pair<String, String>>()
-        private val iterator = byteArray.toString().iterator()
+
+        // ¯\_(ツ)_/¯
+        private val iterator = byteArray.toString(StandardCharsets.UTF_8).iterator()
         private val sb = StringBuilder()
 
         fun tokenize(): List<Pair<String, String>> {
@@ -196,14 +199,19 @@ class DefaultMemtableService(
                     if (!(processKeyValueDelimiter(x) && processEntryDelimiter(x))) {
                         sb.append(x)
                     }
+
+                    if (isPreviousCharEscape) {
+                        isPreviousCharEscape = false
+                    }
                 }
             }
             isDone = true
             return keyValueList
         }
 
+        // Сломатется на любом разделителе длины больше одного.
         private fun processKeyValueDelimiter(character: Char): Boolean {
-            if (character == ':' && isKey && isPreviousCharEscape) {
+            if (character.toString() == keyValueDelimiter && isKey && !isPreviousCharEscape) {
                 isKey = false
                 keyValueList.add(Pair(sb.toString(), ""))
                 sb.clear()
@@ -213,7 +221,8 @@ class DefaultMemtableService(
         }
 
         private fun processEntryDelimiter(character: Char): Boolean {
-            if (character == ';' && !isPreviousCharEscape && !isKey) {
+            if (character.toString() == entryDelimiter && !isPreviousCharEscape && !isKey) {
+                val char = character.toString()
                 isKey = true
                 val key = keyValueList[keyValueList.size - 1].first
                 keyValueList[keyValueList.size - 1] = Pair(key, sb.toString())
