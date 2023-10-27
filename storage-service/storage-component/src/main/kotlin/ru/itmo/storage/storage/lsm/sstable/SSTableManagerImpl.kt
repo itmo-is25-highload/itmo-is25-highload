@@ -19,8 +19,7 @@ class SSTableManagerImpl(
     private lateinit var ssTables: Deque<SSTable>
 
     init {
-        this.ssTables = loader.loadTables()
-            .sortedByDescending { it.id }
+        this.ssTables = loader.loadTablesSortedByCreationTimeDesc()
             .toCollection(ArrayDeque())
     }
 
