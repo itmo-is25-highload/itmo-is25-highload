@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import ru.itmo.storage.storage.compression.DeflateCompressionService
 import ru.itmo.storage.storage.compression.properties.DeflateCompressionServiceProperties
+import ru.itmo.storage.storage.jobs.config.QuartzConfig
 import ru.itmo.storage.storage.local.FileSystemKeyValueRepository
 import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
 import ru.itmo.storage.storage.lsm.DefaultMemtableService
@@ -18,7 +19,10 @@ import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
 import ru.itmo.storage.storage.wal.WalLoggingAspect
 
 @Configuration
-@Import(CoroutinesConfiguration::class)
+@Import(
+    CoroutinesConfiguration::class,
+    QuartzConfig::class,
+)
 class StorageComponentAutoconfiguration {
 
     @Import(
