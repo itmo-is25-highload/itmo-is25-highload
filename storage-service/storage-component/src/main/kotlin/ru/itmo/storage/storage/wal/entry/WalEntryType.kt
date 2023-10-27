@@ -5,3 +5,7 @@ enum class WalEntryType {
     SSTABLE_FLUSH,
     UNKNOWN,
 }
+
+fun String.toWalEntryTypeOrUnknown(): WalEntryType = runCatching {
+    WalEntryType.valueOf(this)
+}.getOrElse { WalEntryType.UNKNOWN }
