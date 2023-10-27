@@ -1,12 +1,12 @@
 package ru.itmo.storage.storage.lsm
 
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Repository
 import ru.itmo.storage.storage.KeyValueRepository
 import ru.itmo.storage.storage.exception.KeyNotFoundException
 import ru.itmo.storage.storage.lsm.avl.AVLTree
 import ru.itmo.storage.storage.lsm.avl.DefaultAVLTree
 
-@Service
+@Repository
 class LsmTreeKeyValueRepository : KeyValueRepository {
 
     private val tree: AVLTree = DefaultAVLTree()
