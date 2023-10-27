@@ -7,7 +7,7 @@ storage:
       allocatedBufferSize: 4096
       type: deflate
     flush:
-      tableParentDir: "D:\\labs\\5sem\\labs_highload\\itmo-is-25-highload\\db"
+      tableParentDir: "PLACEHOLDER"
       keyValueDelimiter: ":"
       blockSizeInBytes: 65536
       entryDelimiter: ";"
