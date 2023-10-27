@@ -91,7 +91,7 @@ class DefaultMemtableService(
             totalBytesRead += currentReadSize
         }
 
-        val tokenizer = TokenizerMachine(baos.toByteArray(), properites.keyValueDelimiter, properites.keyValueDelimiter)
+        val tokenizer = TokenizerMachine(baos.toByteArray(), properites.keyValueDelimiter, properites.entryDelimiter)
         val tokenizedIndex = tokenizer.tokenize()
 
         for (token in tokenizedIndex) {
@@ -197,9 +197,9 @@ class DefaultMemtableService(
                         isPreviousCharEscape = true
                     }
                 } else {
-                    if (!(processKeyValueDelimiter(x) && processEntryDelimiter(x))) {
-                        sb.append(x)
-                    }
+                    if (processKeyValueDelimiter(x)) { }
+                    else if (processEntryDelimiter(x)) { }
+                    else { sb.append(x) }
 
                     if (isPreviousCharEscape) {
                         isPreviousCharEscape = false
@@ -223,7 +223,6 @@ class DefaultMemtableService(
 
         private fun processEntryDelimiter(character: Char): Boolean {
             if (character.toString() == entryDelimiter && !isPreviousCharEscape && !isKey) {
-                val char = character.toString()
                 isKey = true
                 val key = keyValueList[keyValueList.size - 1].first
                 keyValueList[keyValueList.size - 1] = Pair(key, sb.toString())
