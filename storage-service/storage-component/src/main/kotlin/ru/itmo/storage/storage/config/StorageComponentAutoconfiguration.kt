@@ -3,6 +3,7 @@ package ru.itmo.storage.storage.config
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.context.annotation.Import
 import ru.itmo.storage.storage.compression.DeflateCompressionService
 import ru.itmo.storage.storage.compression.properties.DeflateCompressionServiceProperties
@@ -16,12 +17,14 @@ import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
 import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
 import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
-import ru.itmo.storage.storage.wal.WalLoggingAspect
+import ru.itmo.storage.storage.wal.WalConfig
 
+@EnableAspectJAutoProxy
 @Configuration
 @Import(
     CoroutinesConfiguration::class,
     QuartzConfig::class,
+    WalConfig::class,
 )
 class StorageComponentAutoconfiguration {
 
@@ -64,7 +67,4 @@ class StorageComponentAutoconfiguration {
     @EnableConfigurationProperties(LsmRepositoryFlushProperties::class)
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "lsm", matchIfMissing = false)
     class LsmRepositoryMemtableServiceConfiguration
-
-    @Import(WalLoggingAspect::class)
-    class WalLoggingAspectConfiguration
 }
