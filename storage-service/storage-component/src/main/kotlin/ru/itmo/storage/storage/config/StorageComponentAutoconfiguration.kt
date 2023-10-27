@@ -15,10 +15,12 @@ import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
 import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
 import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
-import ru.itmo.storage.wal.WalLoggingAspect
+import ru.itmo.storage.storage.wal.WalLoggingAspect
 
 @Configuration
+@Import(CoroutinesConfiguration::class)
 class StorageComponentAutoconfiguration {
+
     @Import(
         FileSystemKeyValueRepository::class,
     )
@@ -45,7 +47,11 @@ class StorageComponentAutoconfiguration {
         DeflateCompressionService::class,
     )
     @EnableConfigurationProperties(DeflateCompressionServiceProperties::class)
-    @ConditionalOnProperty(name = ["storage.component.compression.type"], havingValue = "deflate", matchIfMissing = false)
+    @ConditionalOnProperty(
+        name = ["storage.component.compression.type"],
+        havingValue = "deflate",
+        matchIfMissing = false,
+    )
     class DeflateCompressionServiceConfiguration
 
     @Import(

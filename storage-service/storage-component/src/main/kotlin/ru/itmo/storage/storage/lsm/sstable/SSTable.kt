@@ -5,7 +5,7 @@ import ru.itmo.storage.storage.lsm.bloomfilter.BloomFilter
 
 class SSTable(
     val id: String,
-    val index: AVLTree,
+    val index: List<AVLTree.Entry>,
     val bloomFilter: BloomFilter,
 ) {
     fun doesNotContainKey(key: String): Boolean {

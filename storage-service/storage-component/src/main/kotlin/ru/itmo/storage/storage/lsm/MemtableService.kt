@@ -6,7 +6,7 @@ import java.util.UUID
 interface MemtableService {
     fun flushMemtableToDisk(memtable: AVLTree): UUID
 
-    fun loadIndex(tableId: String): AVLTree
+    fun loadIndex(tableId: String): List<AVLTree.Entry>
 
-    fun loadBlockByKey(memtable: AVLTree, tableId: String, blockKey: String): List<Pair<String, String>>
+    fun loadBlockByKey(memtable: List<AVLTree.Entry>, tableId: String, blockKey: String): List<Pair<String, String>>
 }
