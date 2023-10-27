@@ -49,7 +49,6 @@ class DefaultMemtableService(
 
     override fun loadBlockByKey(memtable: AVLTree, tableId: String, blockKey: String): List<Pair<String, String>> {
         val table = Path.of("${properites.tableParentDir}/$tableId/table")
-        val index = Path.of("${properites.tableParentDir}/$tableId/index")
         val entities = memtable.orderedEntries()
 
         val blockIndex = memtable.orderedEntries().indexOfFirst { entry -> entry.key == blockKey }
@@ -57,7 +56,7 @@ class DefaultMemtableService(
         val size: Long
 
         if (blockIndex == entities.size - 1) {
-            size = index.fileSize() - entry.value.toLong()
+            size = table.fileSize() - entry.value.toLong()
         } else {
             size = entities[blockIndex + 1].value.toLong() - entry.value.toLong()
         }
