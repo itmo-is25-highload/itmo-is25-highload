@@ -1,7 +1,7 @@
-package ru.itmo.storage.wal.entry.upsert
+package ru.itmo.storage.storage.wal.entry.upsert
 
-import ru.itmo.storage.wal.entry.WalEntry
-import ru.itmo.storage.wal.entry.WalEntryType
+import ru.itmo.storage.storage.wal.entry.WalEntry
+import ru.itmo.storage.storage.wal.entry.WalEntryType
 import java.time.Instant
 
 class UpsertWalEntry(

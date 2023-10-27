@@ -1,18 +1,17 @@
 package ru.itmo.storage.storage.lsm
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import ru.itmo.storage.storage.compression.CompressionService
 import ru.itmo.storage.storage.lsm.avl.AVLTree
-import ru.itmo.storage.storage.lsm.avl.DefaultAVLTree
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
-import java.lang.StringBuilder
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.UUID
+import java.util.*
 import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
@@ -25,9 +24,13 @@ class DefaultMemtableService(
     private val compressionService: CompressionService,
 ) : MemtableService {
 
+    private val log = KotlinLogging.logger { }
+
     override fun flushMemtableToDisk(memtable: AVLTree): UUID {
         val directoryId = getDirectoryId()
         val tableDirPath = Path.of("${properites.tableParentDir}/$directoryId").createDirectory()
+
+        log.info { "Save SSTable to $tableDirPath" }
         val table = Files.createFile(Path.of("$tableDirPath/table"))
         val index = Files.createFile(Path.of("$tableDirPath/index"))
 
@@ -40,25 +43,28 @@ class DefaultMemtableService(
         return directoryId
     }
 
-    override fun loadIndex(tableId: String): AVLTree {
+    override fun loadIndex(tableId: String): List<AVLTree.Entry> {
         val index = Path.of("${properites.tableParentDir}/$tableId/index")
         index.inputStream().buffered().use { iReader ->
             return readIndex(iReader)
         }
     }
 
-    override fun loadBlockByKey(memtable: AVLTree, tableId: String, blockKey: String): List<Pair<String, String>> {
+    override fun loadBlockByKey(
+        memtable: List<AVLTree.Entry>,
+        tableId: String,
+        blockKey: String,
+    ): List<Pair<String, String>> {
         val table = Path.of("${properites.tableParentDir}/$tableId/table")
-        val entities = memtable.orderedEntries()
 
-        val blockIndex = memtable.orderedEntries().indexOfFirst { entry -> entry.key == blockKey }
-        val entry = entities[blockIndex]
+        val blockIndex = memtable.indexOfFirst { entry -> entry.key == blockKey }
+        val entry = memtable[blockIndex]
         val size: Long
 
-        if (blockIndex == entities.size - 1) {
+        if (blockIndex == memtable.size - 1) {
             size = table.fileSize() - entry.value.toLong()
         } else {
-            size = entities[blockIndex + 1].value.toLong() - entry.value.toLong()
+            size = memtable[blockIndex + 1].value.toLong() - entry.value.toLong()
         }
 
         table.inputStream().buffered().use { iReader ->
@@ -75,9 +81,9 @@ class DefaultMemtableService(
         return tokenizerMachine.tokenize()
     }
 
-    private fun readIndex(indexReader: BufferedInputStream): AVLTree {
-        val tree: AVLTree = DefaultAVLTree()
+    private fun readIndex(indexReader: BufferedInputStream): List<AVLTree.Entry> {
         val baos = ByteArrayOutputStream()
+        val result = mutableListOf<AVLTree.Entry>()
 
         val buffer = ByteArray(properites.readBufferSize.toInt())
 
@@ -94,10 +100,10 @@ class DefaultMemtableService(
         val tokenizedIndex = tokenizer.tokenize()
 
         for (token in tokenizedIndex) {
-            tree.upsert(token.first, token.second)
+            result += AVLTree.Entry(token.first, token.second)
         }
 
-        return tree
+        return result.sortedWith(compareBy(AVLTree.Entry::key, AVLTree.Entry::value))
     }
 
     private fun getDirectoryId(): UUID {
@@ -112,6 +118,8 @@ class DefaultMemtableService(
     private fun writeToDisk(tableWriter: OutputStream, indexWriter: OutputStream, memtable: AVLTree) {
         val entities = memtable.orderedEntries()
 
+        log.info { "Create SSTable with entries $entities" }
+
         if (entities.isEmpty()) {
             return
         }
@@ -125,6 +133,8 @@ class DefaultMemtableService(
         var firstEntry = true
         var currentIndexKey: String? = null
 
+        val kvDelimiter = properites.keyValueDelimiter
+        val entryDelimiter = properites.entryDelimiter
         for (i in entities.indices) {
             val key = entities[i].key
             val value = entities[i].value
@@ -136,15 +146,16 @@ class DefaultMemtableService(
                 firstEntry = false
             }
 
-            val currentEntry = "${key.escapeEntry()}${properites.keyValueDelimiter}${value.escapeEntry()}${properites.entryDelimiter}".toByteArray()
-            baos.write(currentEntry, currentBlockSize.toInt(), currentEntry.size)
+            val currentEntry = "${key.escapeEntry()}$kvDelimiter${value.escapeEntry()}$entryDelimiter".toByteArray()
+            baos.write(currentEntry, 0, currentEntry.size)
 
             currentBlockSize += currentEntry.size
             indexOffset += currentBlockSize
 
             if (currentBlockSize >= properites.blockSizeInBytes) {
                 val compressedBlock = compressionService.compress(baos.toByteArray())
-                val indexEntry = "${currentIndexKey?.escapeEntry()}${properites.keyValueDelimiter}$indexOffset${properites.entryDelimiter}"
+                val indexEntry =
+                    "${currentIndexKey?.escapeEntry()}$kvDelimiter$indexOffset$entryDelimiter"
 
                 firstEntry = true
 
@@ -156,12 +167,13 @@ class DefaultMemtableService(
         }
 
         // Means that the last entry was loaded with the last block and there was no hanging entries
-        if (firstEntry) {
-            return
+        if (!firstEntry) {
+            tableWriter.write(compressionService.compress(baos.toByteArray()))
+            indexWriter.write("${currentIndexKey?.escapeEntry()}$kvDelimiter${blockStartOffset}$entryDelimiter".toByteArray())
         }
 
-        tableWriter.write(compressionService.compress(baos.toByteArray()))
-        indexWriter.write("${currentIndexKey?.escapeEntry()}${properites.keyValueDelimiter}${blockStartOffset}${properites.entryDelimiter}".toByteArray())
+        val lastKey = entities.last().key
+        indexWriter.write("${lastKey.escapeEntry()}$kvDelimiter${indexOffset}$entryDelimiter".toByteArray())
     }
 
     private fun String.escape(delimiter: String): String {
@@ -172,7 +184,11 @@ class DefaultMemtableService(
         return this.escape("\\").escape(properites.keyValueDelimiter).escape(properites.entryDelimiter)
     }
 
-    private class TokenizerMachine(byteArray: ByteArray, private val keyValueDelimiter: String, private val entryDelimiter: String) {
+    private class TokenizerMachine(
+        byteArray: ByteArray,
+        private val keyValueDelimiter: String,
+        private val entryDelimiter: String,
+    ) {
         private var isDone: Boolean = false
         private var isKey: Boolean = true
         private var isPreviousCharEscape: Boolean = false
@@ -196,9 +212,11 @@ class DefaultMemtableService(
                         isPreviousCharEscape = true
                     }
                 } else {
-                    if (processKeyValueDelimiter(x)) { }
-                    else if (processEntryDelimiter(x)) { }
-                    else { sb.append(x) }
+                    if (processKeyValueDelimiter(x)) {
+                    } else if (processEntryDelimiter(x)) {
+                    } else {
+                        sb.append(x)
+                    }
 
                     if (isPreviousCharEscape) {
                         isPreviousCharEscape = false

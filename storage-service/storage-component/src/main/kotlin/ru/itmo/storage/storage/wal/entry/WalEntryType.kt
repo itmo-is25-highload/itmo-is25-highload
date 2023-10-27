@@ -1,4 +1,4 @@
-package ru.itmo.storage.wal.entry
+package ru.itmo.storage.storage.wal.entry
 
 enum class WalEntryType {
     UPSERT,

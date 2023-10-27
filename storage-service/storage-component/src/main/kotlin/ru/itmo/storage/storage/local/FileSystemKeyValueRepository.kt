@@ -14,7 +14,7 @@ class FileSystemKeyValueRepository(
 
     private val log = KotlinLogging.logger { }
 
-    override fun get(key: String): String {
+    override suspend fun get(key: String): String {
         val path = fileSystemRepositoryProperties.storagePath
 
         return findFile(path, key)
@@ -22,7 +22,7 @@ class FileSystemKeyValueRepository(
             ?: throw KeyNotFoundException(key)
     }
 
-    override fun set(key: String, value: String) {
+    override suspend fun set(key: String, value: String) {
         val path = fileSystemRepositoryProperties.storagePath
 
         createDirectoryIfNotExists(path)

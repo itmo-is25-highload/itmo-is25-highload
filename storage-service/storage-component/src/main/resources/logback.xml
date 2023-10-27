@@ -17,7 +17,7 @@
         </encoder>
     </appender>
 
-    <logger name="ru.itmo.storage.wal.WalLoggingAspect" additivity="false" level="INFO">
+    <logger name="ru.itmo.storage.storage.wal.WalLoggingAspect" additivity="false" level="INFO">
         <appender-ref ref="ROLLING"/>
     </logger>
     <root level="INFO">
