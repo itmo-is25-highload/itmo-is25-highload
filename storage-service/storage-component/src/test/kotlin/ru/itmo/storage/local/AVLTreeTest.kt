@@ -57,6 +57,18 @@ class AVLTreeTest {
         Assertions.assertNull(copy.find("key"))
         Assertions.assertEquals("value", tree.find("key"))
     }
+
+    @Test
+    fun orderedEntitiesTest() {
+        val elements = listOf("1", "2", "3", "4", "5", "6", "7")
+
+        elements.permutations().forEach { permutation ->
+            val tree = DefaultAVLTree()
+
+            permutation.forEach { tree.upsert(it, "value") }
+            Assertions.assertEquals(elements, tree.orderedEntries().map { it.key })
+        }
+    }
 }
 
 private fun <E> List<E>.permutations(builtSequence: List<E> = listOf()): List<List<E>> =
