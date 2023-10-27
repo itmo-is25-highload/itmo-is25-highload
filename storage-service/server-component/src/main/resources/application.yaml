@@ -1,5 +1,13 @@
+spring:
+  quartz:
+    job-store-type: memory
+
 storage:
   component:
+    jobs:
+      merge-ss-table:
+        cron: 0/2 * * * * ?  # every 2 seconds
+
     filesystem:
       storage-path: ${STORAGE_PATH:data}
       type: lsm
@@ -14,4 +22,3 @@ storage:
       readBufferSize: 4096
     memtable:
       maxSize: 20
-
