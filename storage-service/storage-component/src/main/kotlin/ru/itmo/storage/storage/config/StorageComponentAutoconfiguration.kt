@@ -15,6 +15,8 @@ import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
 import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
 import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
+import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
+import ru.itmo.storage.wal.WalLoggingAspect
 
 @Configuration
 class StorageComponentAutoconfiguration {
@@ -53,4 +55,7 @@ class StorageComponentAutoconfiguration {
     @EnableConfigurationProperties(LsmRepositoryFlushProperties::class)
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "lsm", matchIfMissing = false)
     class LsmRepositoryMemtableServiceConfiguration
+
+    @Import(WalLoggingAspect::class)
+    class WalLoggingAspectConfiguration
 }

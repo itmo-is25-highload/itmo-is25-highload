@@ -83,6 +83,7 @@ class DefaultMemtableService(
 
         var currentReadSize = indexReader.read(buffer)
         var totalBytesRead = currentReadSize
+
         while (currentReadSize != -1) {
             baos.write(buffer, 0, currentReadSize)
             currentReadSize = indexReader.read(buffer)
