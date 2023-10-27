@@ -1,4 +1,4 @@
-package ru.itmo.storage.wal
+package ru.itmo.storage.storage.wal
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -9,12 +9,12 @@ import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Before
 import org.aspectj.lang.annotation.Pointcut
 import org.springframework.stereotype.Component
-import ru.itmo.storage.wal.entry.OperationStatus
-import ru.itmo.storage.wal.entry.WalEntry
-import ru.itmo.storage.wal.entry.flush.SSTableFlushWalEntry
-import ru.itmo.storage.wal.entry.flush.SSTableFlushWalEntryData
-import ru.itmo.storage.wal.entry.upsert.UpsertWalEntry
-import ru.itmo.storage.wal.entry.upsert.UpsertWalEntryData
+import ru.itmo.storage.storage.wal.entry.OperationStatus
+import ru.itmo.storage.storage.wal.entry.WalEntry
+import ru.itmo.storage.storage.wal.entry.flush.SSTableFlushWalEntry
+import ru.itmo.storage.storage.wal.entry.flush.SSTableFlushWalEntryData
+import ru.itmo.storage.storage.wal.entry.upsert.UpsertWalEntry
+import ru.itmo.storage.storage.wal.entry.upsert.UpsertWalEntryData
 import java.time.Instant
 import java.util.*
 

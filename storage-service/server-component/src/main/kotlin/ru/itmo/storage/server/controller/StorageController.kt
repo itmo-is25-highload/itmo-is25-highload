@@ -1,6 +1,7 @@
 package ru.itmo.storage.server.controller
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,7 +25,7 @@ class StorageController(
         @NotBlank
         key: String,
     ): String {
-        val value: String = keyValueRepository.get(key)
+        val value: String = runBlocking { keyValueRepository.get(key) }
         log.info { "Got value {$value} by key {$key}" }
 
         return value
@@ -38,8 +39,10 @@ class StorageController(
         @RequestParam
         value: String,
     ) {
-        log.info { "Set value {$value} to key {$key}" }
+        log.info { "Set value $value to key $key" }
 
-        keyValueRepository.set(key, value)
+        runBlocking { keyValueRepository.set(key, value) }
+
+        log.info { "Set value $value to key $key finished" }
     }
 }
