@@ -10,6 +10,11 @@ import ru.itmo.storage.storage.local.FileSystemKeyValueRepository
 import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
 import ru.itmo.storage.storage.lsm.DefaultMemtableService
 import ru.itmo.storage.storage.lsm.LsmTreeKeyValueRepository
+import ru.itmo.storage.storage.lsm.properties.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
+import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
+import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
+import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.wal.WalLoggingAspect
 
@@ -24,9 +29,18 @@ class StorageComponentAutoconfiguration {
 
     @Import(
         LsmTreeKeyValueRepository::class,
+        LocalSSTableLoader::class,
     )
+    @EnableConfigurationProperties(LsmTreeRepositoryProperties::class, BloomFilterProperties::class)
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "lsm", matchIfMissing = false)
     class LsmTreeKeyValueRepositoryLocalConfiguration
+
+    @Import(
+        SSTableManagerImpl::class,
+    )
+    @EnableConfigurationProperties(BloomFilterProperties::class)
+    @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "lsm", matchIfMissing = false)
+    class LsmTreeKeyValueRepositorySSTableConfiguration
 
     @Import(
         DeflateCompressionService::class,

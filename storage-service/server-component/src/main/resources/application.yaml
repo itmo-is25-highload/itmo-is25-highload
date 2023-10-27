@@ -12,4 +12,6 @@ storage:
       blockSizeInBytes: 65536
       entryDelimiter: ";"
       readBufferSize: 4096
+    memtable:
+      maxSize: 20
 
