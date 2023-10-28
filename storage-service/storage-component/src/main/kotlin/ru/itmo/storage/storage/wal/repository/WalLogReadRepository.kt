@@ -38,7 +38,7 @@ class WalLogReadRepository {
                     val data = Json.decodeFromString<UpsertWalEntryData>(jsonString)
 
                     if (data.status == OperationStatus.SUCCESS) {
-                        result[data.key] = data.value
+                        result.putIfAbsent(data.key, data.value)
                     }
 
                     false
