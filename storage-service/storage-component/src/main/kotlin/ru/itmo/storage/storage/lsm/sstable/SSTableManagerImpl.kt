@@ -48,6 +48,10 @@ class SSTableManagerImpl(
         }
     }
 
+    override fun getCurrentSSTables(): Deque<SSTable> {
+        return ssTables
+    }
+
     override fun findByKey(key: String): String? {
         for (table in ssTables) {
             val value = findByKeyInTable(table, key)
@@ -88,10 +92,10 @@ class SSTableManagerImpl(
             return null
         }
         val pairs = memtableService.loadBlockByKey(table.index, table.id, orderedEntries[blockIndex].key)
-        val valueIndex = pairs.binarySearchBy(key) { it.first }
+        val valueIndex = pairs.binarySearchBy(key) { it.key }
         if (isValueInBlock(valueIndex)) {
             table.markKeyAccessible(key)
-            return pairs[valueIndex].second
+            return pairs[valueIndex].value
         }
         return null
     }

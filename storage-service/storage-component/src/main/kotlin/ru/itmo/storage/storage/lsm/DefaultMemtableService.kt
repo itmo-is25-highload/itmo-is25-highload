@@ -6,6 +6,7 @@ import ru.itmo.storage.storage.compression.CompressionService
 import ru.itmo.storage.storage.lsm.avl.AVLTree
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
@@ -27,18 +28,35 @@ class DefaultMemtableService(
     private val log = KotlinLogging.logger { }
 
     override fun flushMemtableToDisk(memtable: AVLTree): UUID {
-        val directoryId = getDirectoryId()
-        val tableDirPath = Path.of("${properites.tableParentDir}/$directoryId").createDirectory()
+        val directoryId = createEmptySSTable()
+        val tableDirPath = Path.of("${properites.tableParentDir}/$directoryId")
 
         log.info { "Save SSTable to $tableDirPath" }
-        val table = Files.createFile(Path.of("$tableDirPath/table"))
-        val index = Files.createFile(Path.of("$tableDirPath/index"))
+
+        val table = Path.of("$tableDirPath/table")
+        val index = Path.of("$tableDirPath/index")
 
         table.outputStream().use { tWriter ->
             index.outputStream().use { iWriter ->
                 writeToDisk(tWriter, iWriter, memtable)
             }
         }
+
+        return directoryId
+    }
+
+    override fun appendBlockToSSTable(memtable: AVLTree, tableWriter: BufferedOutputStream, indexWriter: BufferedOutputStream) {
+        writeToDisk(tableWriter, indexWriter, memtable)
+    }
+
+    override fun createEmptySSTable(): UUID {
+        val directoryId = getDirectoryId()
+        val tableDirPath = Path.of("${properites.tableParentDir}/$directoryId").createDirectory()
+
+        Files.createFile(Path.of("$tableDirPath/index"))
+        Files.createFile(Path.of("$tableDirPath/table"))
+
+        log.info { "Create empty SSTable at $tableDirPath" }
 
         return directoryId
     }
@@ -54,7 +72,7 @@ class DefaultMemtableService(
         memtable: List<AVLTree.Entry>,
         tableId: String,
         blockKey: String,
-    ): List<Pair<String, String>> {
+    ): List<AVLTree.Entry> {
         val table = Path.of("${properites.tableParentDir}/$tableId/table")
 
         val blockIndex = memtable.indexOfFirst { entry -> entry.key == blockKey }
@@ -72,7 +90,7 @@ class DefaultMemtableService(
         }
     }
 
-    private fun readTable(tableReader: BufferedInputStream, size: Long): List<Pair<String, String>> {
+    private fun readTable(tableReader: BufferedInputStream, size: Long): List<AVLTree.Entry> {
         val buffer = ByteArray(size.toInt())
         tableReader.read(buffer)
 
@@ -100,7 +118,7 @@ class DefaultMemtableService(
         val tokenizedIndex = tokenizer.tokenize()
 
         for (token in tokenizedIndex) {
-            result += AVLTree.Entry(token.first, token.second)
+            result += AVLTree.Entry(token.key, token.value)
         }
 
         return result.sortedWith(compareBy(AVLTree.Entry::key, AVLTree.Entry::value))
@@ -192,13 +210,13 @@ class DefaultMemtableService(
         private var isDone: Boolean = false
         private var isKey: Boolean = true
         private var isPreviousCharEscape: Boolean = false
-        private var keyValueList = mutableListOf<Pair<String, String>>()
+        private var keyValueList = mutableListOf<AVLTree.Entry>()
 
         // ¯\_(ツ)_/¯
         private val iterator = byteArray.toString(StandardCharsets.UTF_8).iterator()
         private val sb = StringBuilder()
 
-        fun tokenize(): List<Pair<String, String>> {
+        fun tokenize(): List<AVLTree.Entry> {
             if (isDone) {
                 return keyValueList
             }
@@ -231,7 +249,7 @@ class DefaultMemtableService(
         private fun processKeyValueDelimiter(character: Char): Boolean {
             if (character.toString() == keyValueDelimiter && isKey && !isPreviousCharEscape) {
                 isKey = false
-                keyValueList.add(Pair(sb.toString(), ""))
+                keyValueList.add(AVLTree.Entry(sb.toString(), ""))
                 sb.clear()
                 return true
             }
@@ -241,8 +259,8 @@ class DefaultMemtableService(
         private fun processEntryDelimiter(character: Char): Boolean {
             if (character.toString() == entryDelimiter && !isPreviousCharEscape && !isKey) {
                 isKey = true
-                val key = keyValueList[keyValueList.size - 1].first
-                keyValueList[keyValueList.size - 1] = Pair(key, sb.toString())
+                val key = keyValueList[keyValueList.size - 1].key
+                keyValueList[keyValueList.size - 1] = AVLTree.Entry(key, sb.toString())
                 sb.clear()
                 return true
             }
