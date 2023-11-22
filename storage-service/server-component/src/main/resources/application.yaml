@@ -2,23 +2,34 @@ spring:
   quartz:
     job-store-type: memory
 
+
 storage:
   component:
+    redis:
+      host: localhost
+      port: 6380
+      username: redis
+      password: kek123
     jobs:
       merge-ss-table:
         cron: 0/2 * * * * ?  # every 2 seconds
 
     filesystem:
       storage-path: ${STORAGE_PATH:data}
-      type: lsm
+      type: redis
     compression:
       allocatedBufferSize: 4096
       type: deflate
     flush:
-      tableParentDir: "PLACEHOLDER"
+      tableParentDir: /Users/mindtable/ITMO/5-sem/itmo-is25-highload/testRes
       keyValueDelimiter: ":"
       blockSizeInBytes: 65536
       entryDelimiter: ";"
       readBufferSize: 4096
     memtable:
-      maxSize: 20
+      maxSize: 30
+debug: true
+
+logging:
+  level:
+    io.lettuce.*: trace

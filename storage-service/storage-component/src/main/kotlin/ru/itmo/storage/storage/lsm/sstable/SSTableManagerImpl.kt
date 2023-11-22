@@ -69,7 +69,7 @@ class SSTableManagerImpl(
             val bloomFilter = async { getBloomFilter(memtable) }
 
             log.info { "Flush memtable to disk with $memtable" }
-            val id: String = memtableService.flushMemtableToDisk(memtable).toString()
+            val id: String = memtableService.flushMemtableToDisk(memtable)
             val index: List<AVLTree.Entry> = memtableService.loadIndex(id)
 
             log.info { "Add ssTable to list with $memtable" }

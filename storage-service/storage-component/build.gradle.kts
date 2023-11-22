@@ -25,6 +25,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
 
+    // Redis
+    implementation("io.lettuce:lettuce-core:6.2.6.RELEASE")
+
     // Logger
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
     compileOnlyApi("io.github.oshai:kotlin-logging-jvm:5.1.0")
@@ -35,6 +38,8 @@ dependencies {
 
     // Kotlin libraries
     implementation(kotlin("stdlib-jdk8"))
+    runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 

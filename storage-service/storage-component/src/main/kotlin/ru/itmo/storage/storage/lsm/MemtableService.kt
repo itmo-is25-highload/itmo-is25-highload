@@ -2,14 +2,13 @@ package ru.itmo.storage.storage.lsm
 
 import ru.itmo.storage.storage.lsm.avl.AVLTree
 import java.io.BufferedOutputStream
-import java.util.UUID
 
 interface MemtableService {
-    fun flushMemtableToDisk(memtable: AVLTree): UUID
+    fun flushMemtableToDisk(memtable: AVLTree): String
 
     fun appendBlockToSSTable(memtable: AVLTree, tableWriter: BufferedOutputStream, indexWriter: BufferedOutputStream)
 
-    fun createEmptySSTable(): UUID
+    fun createEmptySSTable(): String
 
     fun loadIndex(tableId: String): List<AVLTree.Entry>
 
