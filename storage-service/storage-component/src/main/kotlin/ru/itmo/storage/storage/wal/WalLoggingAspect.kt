@@ -68,8 +68,8 @@ class WalLoggingAspect {
     }
 
     @AfterReturning("ssTableFlushingPointcut()", returning = "tableId", argNames = "tableId")
-    fun logAfterSuccessfulFlushingSSTable(tableId: UUID) {
-        val data = SSTableFlushWalEntryData(OperationStatus.SUCCESS, tableId.toString())
+    fun logAfterSuccessfulFlushingSSTable(tableId: String) {
+        val data = SSTableFlushWalEntryData(OperationStatus.SUCCESS, tableId)
         val walEntry = SSTableFlushWalEntry(getCurrentTime(), data)
         logWalEntry(walEntry)
     }

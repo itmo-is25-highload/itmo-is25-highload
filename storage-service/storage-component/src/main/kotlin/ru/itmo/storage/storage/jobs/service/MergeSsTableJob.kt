@@ -32,6 +32,7 @@ class MergeSsTableJob(
 
     // CANCER
     override fun executeInternal(context: JobExecutionContext) {
+//        return
         log.info { "Job execution started" }
         val tables = ssTableManager.getCurrentSSTables()
         val firstTable = tables.pollFirst()

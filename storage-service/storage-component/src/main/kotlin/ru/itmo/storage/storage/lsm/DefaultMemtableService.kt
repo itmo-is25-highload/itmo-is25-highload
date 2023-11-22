@@ -3,6 +3,7 @@ package ru.itmo.storage.storage.lsm
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import ru.itmo.storage.storage.compression.CompressionService
+import ru.itmo.storage.storage.identifiers.UniqueIdentifierService
 import ru.itmo.storage.storage.lsm.avl.AVLTree
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import java.io.BufferedInputStream
@@ -12,7 +13,6 @@ import java.io.OutputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
 import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
@@ -23,11 +23,12 @@ import kotlin.io.path.outputStream
 class DefaultMemtableService(
     private val properites: LsmRepositoryFlushProperties,
     private val compressionService: CompressionService,
+    private val uniqueIdentifierService: UniqueIdentifierService,
 ) : MemtableService {
 
     private val log = KotlinLogging.logger { }
 
-    override fun flushMemtableToDisk(memtable: AVLTree): UUID {
+    override fun flushMemtableToDisk(memtable: AVLTree): String {
         val directoryId = createEmptySSTable()
         val tableDirPath = Path.of("${properites.tableParentDir}/$directoryId")
 
@@ -45,11 +46,15 @@ class DefaultMemtableService(
         return directoryId
     }
 
-    override fun appendBlockToSSTable(memtable: AVLTree, tableWriter: BufferedOutputStream, indexWriter: BufferedOutputStream) {
+    override fun appendBlockToSSTable(
+        memtable: AVLTree,
+        tableWriter: BufferedOutputStream,
+        indexWriter: BufferedOutputStream,
+    ) {
         writeToDisk(tableWriter, indexWriter, memtable)
     }
 
-    override fun createEmptySSTable(): UUID {
+    override fun createEmptySSTable(): String {
         val directoryId = getDirectoryId()
         val tableDirPath = Path.of("${properites.tableParentDir}/$directoryId").createDirectory()
 
@@ -124,11 +129,11 @@ class DefaultMemtableService(
         return result.sortedWith(compareBy(AVLTree.Entry::key, AVLTree.Entry::value))
     }
 
-    private fun getDirectoryId(): UUID {
-        var dirId = UUID.randomUUID()
+    private fun getDirectoryId(): String {
+        var dirId = uniqueIdentifierService.nextIdentifier()
         val tablePathPrefix = properites.tableParentDir
         while (Path.of("$tablePathPrefix/$dirId").exists())
-            dirId = UUID.randomUUID()
+            dirId = uniqueIdentifierService.nextIdentifier()
 
         return dirId
     }
@@ -175,6 +180,8 @@ class DefaultMemtableService(
                 val indexEntry =
                     "${currentIndexKey?.escapeEntry()}$kvDelimiter$indexOffset$entryDelimiter"
 
+                log.info { "Write index entry $indexEntry" }
+
                 firstEntry = true
 
                 tableWriter.write(compressedBlock)
@@ -187,11 +194,17 @@ class DefaultMemtableService(
         // Means that the last entry was loaded with the last block and there was no hanging entries
         if (!firstEntry) {
             tableWriter.write(compressionService.compress(baos.toByteArray()))
-            indexWriter.write("${currentIndexKey?.escapeEntry()}$kvDelimiter${blockStartOffset}$entryDelimiter".toByteArray())
+            val indexEntry = "${currentIndexKey?.escapeEntry()}$kvDelimiter${blockStartOffset}$entryDelimiter"
+            log.info { "Write index entry $indexEntry" }
+            indexWriter.write(indexEntry.toByteArray())
         }
 
-        val lastKey = entities.last().key
-        indexWriter.write("${lastKey.escapeEntry()}$kvDelimiter${indexOffset}$entryDelimiter".toByteArray())
+        if (entities.last().key != currentIndexKey) {
+            val lastKey = entities.last().key
+            val indexEntry = "${lastKey.escapeEntry()}$kvDelimiter${blockStartOffset}$entryDelimiter"
+            log.info { "Write index entry $indexEntry" }
+            indexWriter.write(indexEntry.toByteArray())
+        }
     }
 
     private fun String.escape(delimiter: String): String {
