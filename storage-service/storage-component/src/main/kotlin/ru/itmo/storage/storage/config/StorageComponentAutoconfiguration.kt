@@ -18,6 +18,7 @@ import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
 import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
 import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
+import ru.itmo.storage.storage.redis.configuration.RedisClusterKeyValueRepositoryConfiguration
 import ru.itmo.storage.storage.redis.configuration.RedisKeyValueRepositoryConfiguration
 import ru.itmo.storage.storage.redis.repository.RedisKeyValueRepository
 import ru.itmo.storage.storage.wal.WalConfig
@@ -77,4 +78,10 @@ class StorageComponentAutoconfiguration {
     )
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "redis", matchIfMissing = false)
     class RedisRepositoryServiceConfiguration
+
+    @Import(
+        RedisClusterKeyValueRepositoryConfiguration::class,
+    )
+    @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "redis-cluster", matchIfMissing = false)
+    class RedisClusterRepositoryConfiguration
 }
