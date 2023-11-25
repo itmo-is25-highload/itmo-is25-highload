@@ -14,9 +14,45 @@ storage:
       merge-ss-table:
         cron: 0/2 * * * * ?  # every 2 seconds
 
+    redis-cluster:
+      nodes:
+        -
+          host: localhost
+          port: 7000
+          username: redis
+          password: bazinga
+        -
+          host: localhost
+          port: 7001
+          username: redis
+          password: bazinga
+        -
+          host: localhost
+          port: 7002
+          username: redis
+          password: bazinga
+
+        -
+          host: localhost
+          port: 7003
+          username: redis
+          password: bazinga
+
+        -
+          host: localhost
+          port: 7004
+          username: redis
+          password: bazinga
+
+        -
+          host: localhost
+          port: 7005
+          username: redis
+          password: bazinga
+
     filesystem:
       storage-path: ${STORAGE_PATH:data}
-      type: redis
+      type: redis-cluster
     compression:
       allocatedBufferSize: 4096
       type: deflate
