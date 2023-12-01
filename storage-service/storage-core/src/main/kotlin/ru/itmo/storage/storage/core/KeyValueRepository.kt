@@ -1,4 +1,4 @@
-package ru.itmo.storage.storage
+package ru.itmo.storage.storage.core
 
 interface KeyValueRepository {
 

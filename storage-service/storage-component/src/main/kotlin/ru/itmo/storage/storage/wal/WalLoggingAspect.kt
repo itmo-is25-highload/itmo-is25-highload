@@ -23,7 +23,7 @@ import java.util.*
 class WalLoggingAspect {
     val log = logger()
 
-    @Pointcut("within(ru.itmo.storage.storage.KeyValueRepository+)")
+    @Pointcut("within(ru.itmo.storage.storage.core.KeyValueRepository+)")
     protected fun dbOperationsPointcut() {
     }
 

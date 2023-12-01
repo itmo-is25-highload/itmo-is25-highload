@@ -11,8 +11,8 @@ import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import ru.itmo.storage.storage.KeyValueRepository
-import ru.itmo.storage.storage.exception.KeyNotFoundException
+import ru.itmo.storage.storage.core.KeyValueRepository
+import ru.itmo.storage.storage.core.exception.KeyNotFoundException
 
 @WebMvcTest(controllers = [StorageController::class])
 internal class StorageControllerTest(@Autowired val mockMvc: MockMvc) {

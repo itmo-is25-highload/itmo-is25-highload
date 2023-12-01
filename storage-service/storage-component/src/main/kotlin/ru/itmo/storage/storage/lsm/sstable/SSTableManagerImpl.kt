@@ -16,7 +16,7 @@ import ru.itmo.storage.storage.lsm.MemtableService
 import ru.itmo.storage.storage.lsm.avl.AVLTree
 import ru.itmo.storage.storage.lsm.bloomfilter.BloomFilter
 import ru.itmo.storage.storage.lsm.properties.BloomFilterProperties
-import ru.itmo.storage.storage.utils.SearchUtils
+import ru.itmo.storage.storage.core.utils.SearchUtils
 import java.util.*
 
 @Service

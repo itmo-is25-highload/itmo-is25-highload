@@ -1,5 +1,6 @@
 package ru.itmo.storage.client.impl
 
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.ClientResponse
@@ -15,22 +16,22 @@ class StorageClientImpl(
     private val webClient: WebClient,
 ) : StorageClient {
 
-    override fun get(key: String): String {
+    override suspend fun get(key: String): String {
         val requestSpec = webClient.get()
             .uri { uriBuilder -> uriBuilder.path("/keys/{key}").build(key) }
 
         return performRequest(requestSpec)
             .bodyToMono(String::class.java)
-            .block() ?: throw NoServerResponseException()
+            .awaitSingleOrNull() ?: throw NoServerResponseException()
     }
 
-    override fun set(key: String, value: String) {
+    override suspend fun set(key: String, value: String) {
         val requestSpec = webClient.put()
             .uri { uriBuilder -> uriBuilder.path("/keys/{key}").queryParam("value", value).build(key) }
 
         performRequest(requestSpec)
             .toBodilessEntity()
-            .block() ?: throw NoServerResponseException()
+            .awaitSingleOrNull() ?: throw NoServerResponseException()
     }
 
     private fun <S : WebClient.RequestHeadersSpec<S>?> performRequest(

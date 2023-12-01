@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import ru.itmo.storage.storage.KeyValueRepository
+import ru.itmo.storage.storage.core.KeyValueRepository
 import ru.itmo.storage.storage.config.StorageComponentAutoconfiguration
-import ru.itmo.storage.storage.exception.KeyNotFoundException
+import ru.itmo.storage.storage.core.exception.KeyNotFoundException
 
 @SpringBootTest(classes = [StorageComponentAutoconfiguration::class])
 class FileSystemRepositoryTest(

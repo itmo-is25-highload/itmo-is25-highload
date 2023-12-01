@@ -1,6 +1,7 @@
 package ru.itmo.client.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 import ru.itmo.client.service.StorageService
 import ru.itmo.storage.client.StorageClient
@@ -11,7 +12,7 @@ class DefaultStorageService(
 ) : StorageService {
     private val log = KotlinLogging.logger { }
 
-    override fun getValue(key: String) {
+    override fun getValue(key: String) = runBlocking {
         runCatching {
             log.info { "Call storageClient.get(key) with params - key: $key" }
             storageClient.get(key)
@@ -27,7 +28,7 @@ class DefaultStorageService(
         )
     }
 
-    override fun setValue(key: String, value: String) {
+    override fun setValue(key: String, value: String) = runBlocking {
         runCatching {
             log.info { "Call storageClient.set(key, value) with params - key: $key, value: $value" }
             storageClient.set(key, value)

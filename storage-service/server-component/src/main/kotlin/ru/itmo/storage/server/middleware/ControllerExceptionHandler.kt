@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import ru.itmo.storage.server.response.ErrorResponse
-import ru.itmo.storage.storage.exception.KeyNotFoundException
-import ru.itmo.storage.storage.exception.StorageComponentException
+import ru.itmo.storage.storage.core.exception.KeyNotFoundException
+import ru.itmo.storage.storage.core.exception.StorageComponentException
 
 @RestControllerAdvice
 class ControllerExceptionHandler {

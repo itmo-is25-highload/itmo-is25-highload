@@ -10,7 +10,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.10"
 }
 
-group = "ru.itmo.storage.storage"
+group = "ru.itmo.storage.storage.rpcproxy"
 version = "1.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
@@ -22,13 +22,14 @@ dependencies {
     // project
     api(project(":storage-service:storage-core"))
     api(project(":storage-service:storage-redis"))
-    api(project(":storage-service:storage-rpc-proxy"))
+    api(project(":storage-service:client-component"))
 
     // Spring boot
     implementation("org.springframework.boot:spring-boot-starter")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
+    implementation("org.springframework:spring-webflux")
 
     // Redis
     implementation("io.lettuce:lettuce-core:6.2.6.RELEASE")
