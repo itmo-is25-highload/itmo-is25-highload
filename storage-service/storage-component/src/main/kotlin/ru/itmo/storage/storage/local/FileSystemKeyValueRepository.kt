@@ -2,8 +2,8 @@ package ru.itmo.storage.storage.local
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Repository
-import ru.itmo.storage.storage.KeyValueRepository
-import ru.itmo.storage.storage.exception.KeyNotFoundException
+import ru.itmo.storage.storage.core.KeyValueRepository
+import ru.itmo.storage.storage.core.exception.KeyNotFoundException
 import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
 import java.io.File
 

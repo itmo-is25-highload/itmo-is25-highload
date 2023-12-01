@@ -10,7 +10,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.10"
 }
 
-group = "ru.itmo.storage.storage"
+group = "ru.itmo.storage.storage.core"
 version = "1.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
@@ -19,11 +19,6 @@ repositories {
 }
 
 dependencies {
-    // project
-    api(project(":storage-service:storage-core"))
-    api(project(":storage-service:storage-redis"))
-    api(project(":storage-service:storage-rpc-proxy"))
-
     // Spring boot
     implementation("org.springframework.boot:spring-boot-starter")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

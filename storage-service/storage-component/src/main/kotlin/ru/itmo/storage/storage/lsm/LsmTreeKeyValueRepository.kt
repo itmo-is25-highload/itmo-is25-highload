@@ -5,9 +5,9 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Repository
-import ru.itmo.storage.storage.KeyValueRepository
+import ru.itmo.storage.storage.core.KeyValueRepository
 import ru.itmo.storage.storage.config.MEMTABLE_FLUSH
-import ru.itmo.storage.storage.exception.KeyNotFoundException
+import ru.itmo.storage.storage.core.exception.KeyNotFoundException
 import ru.itmo.storage.storage.lsm.avl.AVLTree
 import ru.itmo.storage.storage.lsm.avl.DefaultAVLTree
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties

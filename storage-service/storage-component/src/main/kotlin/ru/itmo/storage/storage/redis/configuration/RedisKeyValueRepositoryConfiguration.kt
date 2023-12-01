@@ -8,17 +8,15 @@ import io.lettuce.core.codec.StringCodec
 import io.lettuce.core.masterreplica.MasterReplica
 import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection
 import io.lettuce.core.resource.ClientResources
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
+import ru.itmo.storage.storage.core.KeyValueRepository
 import ru.itmo.storage.storage.redis.properties.RedisProperties
 import ru.itmo.storage.storage.redis.repository.RedisKeyValueRepository
 
 @Configuration
-@Import(
-    RedisKeyValueRepository::class,
-)
 @EnableConfigurationProperties(RedisProperties::class)
 class RedisKeyValueRepositoryConfiguration {
 
@@ -42,7 +40,7 @@ class RedisKeyValueRepositoryConfiguration {
     }
 
     @Bean("redis-replica-commands")
-    fun redisReplicaReactiveCommands(redisProperties: RedisProperties): RedisStringReactiveCommands<String?, String?>? {
+    fun redisReplicaReactiveCommands(redisProperties: RedisProperties): RedisStringReactiveCommands<String, String> {
         val redisPrimaryURI: RedisURI = RedisURI.builder()
             .withHost(redisProperties.host)
             .withPort(redisProperties.port)
@@ -80,4 +78,13 @@ class RedisKeyValueRepositoryConfiguration {
         primaryAndReplicaConnection.readFrom = ReadFrom.REPLICA
         return primaryAndReplicaConnection.reactive()
     }
+
+    @Bean
+    fun redisKeyValueRepository(
+        @Qualifier("redis-primary-commands") redisPrimaryCommands: RedisStringReactiveCommands<String, String>,
+        @Qualifier("redis-replica-commands") redisReplicaCommands: RedisStringReactiveCommands<String, String>,
+    ): KeyValueRepository = RedisKeyValueRepository(
+        redisPrimaryCommands = redisPrimaryCommands,
+        redisReplicaCommands = redisReplicaCommands,
+    )
 }

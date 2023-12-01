@@ -5,6 +5,22 @@ spring:
 
 storage:
   component:
+    rpcproxy:
+      shards:
+        redis-shards:
+          - range-end: 2032786155
+            password: kek123
+            master:
+              host: localhost
+              port: 6380
+            slaves:
+              - host: localhost
+                port: 6382
+          - range-end: 4194841934
+            password: kek123
+            master:
+              host: localhost
+              port: 6381
     redis:
       host: localhost
       port: 6380
@@ -52,7 +68,7 @@ storage:
 
     filesystem:
       storage-path: ${STORAGE_PATH:data}
-      type: redis-cluster
+      type: rpc-proxy
     compression:
       allocatedBufferSize: 4096
       type: deflate
@@ -64,6 +80,7 @@ storage:
       readBufferSize: 4096
     memtable:
       maxSize: 30
+
 debug: true
 
 logging:

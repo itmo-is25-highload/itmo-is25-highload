@@ -33,6 +33,10 @@ dependencies {
 
     // Kotlin libraries
     implementation(kotlin("stdlib-jdk8"))
+    runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")

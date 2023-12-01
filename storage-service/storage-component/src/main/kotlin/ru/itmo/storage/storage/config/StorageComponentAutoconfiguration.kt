@@ -21,6 +21,7 @@ import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
 import ru.itmo.storage.storage.redis.configuration.RedisClusterKeyValueRepositoryConfiguration
 import ru.itmo.storage.storage.redis.configuration.RedisKeyValueRepositoryConfiguration
 import ru.itmo.storage.storage.redis.repository.RedisKeyValueRepository
+import ru.itmo.storage.storage.rpcproxy.config.StorageRpcProxyConfiguration
 import ru.itmo.storage.storage.wal.WalConfig
 
 @EnableAspectJAutoProxy
@@ -84,4 +85,11 @@ class StorageComponentAutoconfiguration {
     )
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "redis-cluster", matchIfMissing = false)
     class RedisClusterRepositoryConfiguration
+
+    @Configuration
+    @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "rpc-proxy", matchIfMissing = false)
+    @Import(
+        StorageRpcProxyConfiguration::class,
+    )
+    class StorageRpcProxyAutoConfiguration
 }

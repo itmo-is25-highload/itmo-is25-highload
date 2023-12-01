@@ -1,4 +1,4 @@
-package ru.itmo.storage.storage.exception
+package ru.itmo.storage.storage.core.exception
 
 abstract class StorageComponentException(
     messageFormat: String,

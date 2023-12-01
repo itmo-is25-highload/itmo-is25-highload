@@ -6,11 +6,11 @@ import ru.itmo.storage.client.StorageClient
 @Component
 class StorageClientStub : StorageClient {
 
-    override fun get(key: String): String {
+    override suspend fun get(key: String): String {
         throw NotImplementedError()
     }
 
-    override fun set(key: String, value: String) {
+    override suspend fun set(key: String, value: String) {
         throw NotImplementedError()
     }
 }

@@ -1,4 +1,4 @@
-package ru.itmo.storage.storage.utils
+package ru.itmo.storage.storage.core.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 
