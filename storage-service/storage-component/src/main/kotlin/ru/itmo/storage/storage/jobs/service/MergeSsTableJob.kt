@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalPathApi::class)
+
 package ru.itmo.storage.storage.jobs.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -15,7 +17,11 @@ import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.storage.lsm.sstable.SSTable
 import ru.itmo.storage.storage.lsm.sstable.SSTableManager
 import java.io.BufferedOutputStream
+import java.io.IOException
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.outputStream
 
 @DisallowConcurrentExecution
@@ -31,162 +37,195 @@ class MergeSsTableJob(
     private val log = KotlinLogging.logger { }
 
     // CANCER
+    @OptIn(ExperimentalPathApi::class)
     override fun executeInternal(context: JobExecutionContext) {
 //        return
         log.info { "Job execution started" }
         val tables = ssTableManager.getCurrentSSTables()
-        val firstTable = tables.pollFirst()
-        val secondTable = tables.pollFirst()
-
-        if (firstTable == null || secondTable == null) {
+        if (tables.size < 2) {
             log.info { "Not enough SSTables to merge" }
-            if (firstTable != null) { tables.addFirst(firstTable) }
             return
         }
+        val firstTable = tables.pollFirst()
+        val secondTable = tables.pollFirst()
 
         val newTable = memtableService.createEmptySSTable()
         val newTablePath = Path.of("${flushProperties.tableParentDir}/$newTable/table")
         val newTableIndexPath = Path.of("${flushProperties.tableParentDir}/$newTable/index")
 
-        newTablePath.outputStream().buffered().use { tWriter ->
-            newTableIndexPath.outputStream().buffered().use { iWriter ->
-                mergeSSTables(firstTable, secondTable, tWriter, iWriter)
+        newTablePath.outputStream(StandardOpenOption.APPEND).buffered().use { tWriter ->
+            newTableIndexPath.outputStream(StandardOpenOption.APPEND).buffered().use { iWriter ->
+                val merger = SSTableMerger(firstTable, secondTable, tWriter, iWriter, newTable, newTablePath, memtableService, flushProperties)
+                merger.mergeSSTables()
             }
         }
 
         val index = memtableService.loadIndex(newTable.toString())
         val ssTable = SSTable(newTable.toString(), index, BloomFilter(bloomFilterProperties.maxSize, index.size))
         tables.addFirst(ssTable)
-    }
 
-    private fun mergeSSTables(firstTable: SSTable, secondTable: SSTable, tableWriter: BufferedOutputStream, indexWriter: BufferedOutputStream) {
-        val firstTableIndex = firstTable.index
-        val secondTableIndex = secondTable.index
-        var newBlock: AVLTree = DefaultAVLTree()
-
-        var firstIndexPointer = 0
-        var secondIndexPointer = 0
-
-        var firstTableValue = firstTableIndex[firstIndexPointer++]
-        var secondTableValue = secondTableIndex[secondIndexPointer++]
-
-        var firstTableBlock = memtableService.loadBlockByKey(firstTableIndex, firstTable.id, firstTableValue.key)
-        var secondTableBlock = memtableService.loadBlockByKey(secondTableIndex, secondTable.id, secondTableValue.key)
-
-        var firstBlockPointer: IntWrapper = IntWrapper(0)
-        var secondBlockPointer: IntWrapper = IntWrapper(0)
-
-        var currentBlockSize: IntWrapper = IntWrapper(0)
-
-        // While there are still blocks
-        var merger = BlockMerger(firstTableBlock, secondTableBlock, firstBlockPointer, secondBlockPointer, currentBlockSize, newBlock, flushProperties.blockSizeInBytes, memtableService, tableWriter, indexWriter)
-
-        while (firstIndexPointer < firstTableIndex.size && secondIndexPointer < secondTableIndex.size) {
-            merger.merge()
-
-            if (firstBlockPointer.get() == firstTableBlock.size) {
-                firstTableValue = firstTableIndex[firstIndexPointer++]
-                firstTableBlock = memtableService.loadBlockByKey(firstTableIndex, firstTable.id, firstTableValue.key)
-                firstBlockPointer = IntWrapper(0)
-            }
-            if (secondBlockPointer.get() == secondTableBlock.size) {
-                secondTableValue = secondTableIndex[secondIndexPointer++]
-                secondTableBlock = memtableService.loadBlockByKey(secondTableIndex, secondTable.id, secondTableValue.key)
-                secondBlockPointer = IntWrapper(0)
-            }
-        }
-
-        while (firstIndexPointer < firstTableIndex.size) {
-            merger.insertFirstBlock()
-
-            firstTableValue = firstTableIndex[firstIndexPointer++]
-            firstTableBlock = memtableService.loadBlockByKey(firstTableIndex, firstTable.id, firstTableValue.key)
-            firstBlockPointer = IntWrapper(0)
-        }
-
-        while (secondIndexPointer < secondTableIndex.size) {
-            merger.insertSecondBlock()
-
-            secondTableValue = secondTableIndex[secondIndexPointer++]
-            secondTableBlock = memtableService.loadBlockByKey(secondTableIndex, secondTable.id, secondTableValue.key)
-            secondBlockPointer = IntWrapper(0)
+        try {
+            Path.of("${flushProperties.tableParentDir}/${firstTable.id}").deleteRecursively()
+            Path.of("${flushProperties.tableParentDir}/${secondTable.id}").deleteRecursively()
+        } catch (ex: IOException) {
+            log.info { "Failure to remove older tables" }
+            throw ex
         }
     }
 
-    private class IntWrapper(private var value: Int = 0) {
-        fun get(): Int {
-            return value
-        }
-
-        fun set(newValue: Int): IntWrapper {
-            value = newValue
-            return this
-        }
-
-        fun inc(): IntWrapper {
-            value++
-            return this
-        }
-    }
-
-    private class BlockMerger(
-        val firstTableBlock: List<AVLTree.Entry>,
-        val secondTableBlock: List<AVLTree.Entry>,
-        var firstBlockPointer: IntWrapper,
-        var secondBlockPointer: IntWrapper,
-        var currentBlockSize: IntWrapper,
-        var newBlock: AVLTree,
-        var cutOffBlockSize: Long,
-        var memtableService: MemtableService,
-        var tableWriter: BufferedOutputStream,
-        var indexWriter: BufferedOutputStream,
+    class SSTableMerger(
+        val firstTable: SSTable,
+        val secondTable: SSTable,
+        val tableWriter: BufferedOutputStream,
+        val indexWriter: BufferedOutputStream,
+        val tableId: String,
+        val table: Path,
+        val memtableService: MemtableService,
+        flushProperties: LsmRepositoryFlushProperties,
     ) {
-        fun merge() {
-            while (firstBlockPointer.get() < firstTableBlock.size && secondBlockPointer.get() < secondTableBlock.size) {
-                val firstBlockCurrentValue = firstTableBlock[firstBlockPointer.get()]
-                val secondBlockCurrentValue = secondTableBlock[secondBlockPointer.get()]
 
-                if (firstTableBlock[firstBlockPointer.get()].key < secondTableBlock[secondBlockPointer.get()].key) {
-                    newBlock.upsert(firstBlockCurrentValue.key, firstBlockCurrentValue.value)
-                    currentBlockSize.set(firstBlockCurrentValue.key.length + firstBlockCurrentValue.value.length)
-                    firstBlockPointer.inc()
+        private val firstTableIndex = firstTable.index
+        private val secondTableIndex = secondTable.index
+        private var firstIndexPointer: Int = 0
+        private var secondIndexPointer: Int = 0
+
+        private var newBlock: DefaultAVLTree = DefaultAVLTree()
+        private var currentNewBlockSize: Int = 0
+        private var totalBytesWritten: Long = 0
+
+        private var cutOffBlockSize: Long = flushProperties.blockSizeInBytes
+
+        private lateinit var firstTableBlock: List<AVLTree.Entry>
+        private lateinit var secondTableBlock: List<AVLTree.Entry>
+        private var firstTableBlockPointer: Int = 0
+        private var secondTableBlockPointer: Int = 0
+
+        private lateinit var firstTableCurrentEntry: AVLTree.Entry
+        private lateinit var secondTableCurrentEntry: AVLTree.Entry
+
+        private var writtenKeys: MutableSet<String> = mutableSetOf()
+
+        fun mergeSSTables() {
+            firstTableCurrentEntry = firstTableIndex[firstIndexPointer++]
+            secondTableCurrentEntry = secondTableIndex[secondIndexPointer++]
+
+            firstTableBlock = memtableService.loadBlockByKey(firstTableIndex, firstTable.id, firstTableCurrentEntry.key)
+            secondTableBlock = memtableService.loadBlockByKey(secondTableIndex, secondTable.id, secondTableCurrentEntry.key)
+
+            while ((firstIndexPointer < firstTableIndex.size && secondIndexPointer < secondTableIndex.size) || (firstTableBlockPointer < firstTableBlock.size && secondTableBlockPointer < secondTableBlock.size)) {
+                mergeBlocks()
+                loadBlocksBetweenMerge()
+            }
+
+            mergeRemainingBlocksOfFirstTable()
+            mergeRemainingBlocksOfSecondTable()
+
+            if (currentNewBlockSize != 0) {
+                flushBlock()
+            }
+        }
+
+        private fun mergeBlocks() {
+            while (firstTableBlockPointer < firstTableBlock.size && secondTableBlockPointer < secondTableBlock.size) {
+                val firstBlockCurrentValue = firstTableBlock[firstTableBlockPointer]
+                val secondBlockCurrentValue = secondTableBlock[secondTableBlockPointer]
+
+                val firstBlockCurrentKey = firstBlockCurrentValue.key
+                val secondBlockCurrentKey = secondBlockCurrentValue.key
+
+                if (firstBlockCurrentKey < secondBlockCurrentKey) {
+                    if (!writtenKeys.contains(firstBlockCurrentKey)) {
+                        newBlock.upsert(firstBlockCurrentValue.key, firstBlockCurrentValue.value)
+                        writtenKeys.add(firstBlockCurrentKey)
+                        currentNewBlockSize += firstBlockCurrentValue.key.length + firstBlockCurrentValue.value.length
+                    }
+                    firstTableBlockPointer++
                 } else {
-                    newBlock.upsert(secondBlockCurrentValue.key, secondBlockCurrentValue.value)
-                    currentBlockSize.set(secondBlockCurrentValue.key.length + secondBlockCurrentValue.value.length)
-                    secondBlockPointer.inc()
+                    if (!writtenKeys.contains(secondBlockCurrentKey)) {
+                        newBlock.upsert(secondBlockCurrentValue.key, secondBlockCurrentValue.value)
+                        writtenKeys.add(secondBlockCurrentKey)
+                        currentNewBlockSize += secondBlockCurrentValue.key.length + secondBlockCurrentValue.value.length
+                    }
+                    secondTableBlockPointer++
                 }
 
-                if (currentBlockSize.get() >= cutOffBlockSize) {
-                    memtableService.appendBlockToSSTable(newBlock, tableWriter, indexWriter)
-
-                    currentBlockSize = IntWrapper(0)
-                    newBlock = DefaultAVLTree()
-                }
-            }
-        }
-
-        private fun insertBlock(tableBlock: List<AVLTree.Entry>, blockPointer: IntWrapper) {
-            while (blockPointer.get() < firstTableBlock.size) {
-                val blockCurrentValue = tableBlock[blockPointer.get()]
-                newBlock.upsert(blockCurrentValue.key, blockCurrentValue.value)
-                currentBlockSize.set(blockCurrentValue.key.length + blockCurrentValue.value.length)
-                firstBlockPointer.inc()
-
-                if (currentBlockSize.get() >= cutOffBlockSize) {
-                    memtableService.appendBlockToSSTable(newBlock, tableWriter, indexWriter)
-
-                    currentBlockSize = IntWrapper(0)
-                    newBlock = DefaultAVLTree()
+                if (currentNewBlockSize >= cutOffBlockSize) {
+                    flushBlock()
                 }
             }
         }
 
-        fun insertFirstBlock() {
-            insertBlock(firstTableBlock, firstBlockPointer)
+        private fun loadBlocksBetweenMerge() {
+            if (firstTableBlockPointer == firstTableBlock.size && firstIndexPointer < firstTableIndex.size) {
+                firstTableCurrentEntry = firstTableIndex[firstIndexPointer++]
+                firstTableBlock = memtableService.loadBlockByKey(firstTableIndex, firstTable.id, firstTableCurrentEntry.key)
+                firstTableBlockPointer = 0
+            }
+            if (secondTableBlockPointer == secondTableBlock.size && secondIndexPointer < secondTableIndex.size) {
+                secondTableCurrentEntry = secondTableIndex[secondIndexPointer++]
+                secondTableBlock = memtableService.loadBlockByKey(secondTableIndex, secondTable.id, secondTableCurrentEntry.key)
+                secondTableBlockPointer = 0
+            }
         }
 
-        fun insertSecondBlock() {
-            insertBlock(secondTableBlock, secondBlockPointer)
+        private fun mergeRemainingBlocksOfFirstTable() {
+            do {
+                while (firstTableBlockPointer < firstTableBlock.size) {
+                    val blockCurrentValue = firstTableBlock[firstTableBlockPointer]
+                    if (!writtenKeys.contains(blockCurrentValue.key)) {
+                        newBlock.upsert(blockCurrentValue.key, blockCurrentValue.value)
+                        writtenKeys.add(blockCurrentValue.key)
+                        currentNewBlockSize += blockCurrentValue.key.length + blockCurrentValue.value.length
+                    }
+                    firstTableBlockPointer++
+
+                    if (currentNewBlockSize >= cutOffBlockSize) {
+                        flushBlock()
+                    }
+
+                    if (firstIndexPointer < firstTableIndex.size) {
+                        firstTableCurrentEntry = firstTableIndex[firstIndexPointer++]
+                        firstTableBlock = memtableService.loadBlockByKey(firstTableIndex, firstTable.id, firstTableCurrentEntry.key)
+                        firstTableBlockPointer = 0
+                    }
+                }
+            } while (firstIndexPointer < firstTableIndex.size)
+        }
+
+        private fun mergeRemainingBlocksOfSecondTable() {
+            do {
+                while (secondTableBlockPointer < secondTableBlock.size) {
+                    val blockCurrentValue = secondTableBlock[secondTableBlockPointer]
+                    if (!writtenKeys.contains(blockCurrentValue.key)) {
+                        newBlock.upsert(blockCurrentValue.key, blockCurrentValue.value)
+                        writtenKeys.add(blockCurrentValue.key)
+                        currentNewBlockSize += blockCurrentValue.key.length + blockCurrentValue.value.length
+                    }
+                    secondTableBlockPointer++
+
+                    if (currentNewBlockSize >= cutOffBlockSize) {
+                        flushBlock()
+                    }
+
+                    if (secondIndexPointer < secondTableIndex.size) {
+                        secondTableCurrentEntry = secondTableIndex[secondIndexPointer++]
+                        secondTableBlock = memtableService.loadBlockByKey(
+                            secondTableIndex,
+                            secondTable.id,
+                            secondTableCurrentEntry.key,
+                        )
+                        secondTableBlockPointer = 0
+                    }
+                }
+            } while (secondIndexPointer < secondTableIndex.size)
+        }
+
+        private fun flushBlock() {
+            memtableService.appendBlockToSSTable(newBlock, tableWriter, indexWriter, table, tableId)
+            totalBytesWritten += currentNewBlockSize
+            currentNewBlockSize = 0
+            newBlock = DefaultAVLTree()
+            tableWriter.flush()
         }
     }
 }

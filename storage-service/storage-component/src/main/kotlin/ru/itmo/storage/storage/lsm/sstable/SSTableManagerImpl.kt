@@ -80,7 +80,6 @@ class SSTableManagerImpl(
     private fun findByKeyInTable(table: SSTable, key: String): String? {
         if (table.doesNotContainKey(key)) {
             log.info { "Bloom filter said that key isn't present in table ${table.id}" }
-            return null
         }
 
         val orderedEntries = table.index
@@ -106,7 +105,7 @@ class SSTableManagerImpl(
     ): Boolean {
         log.info { "Is block in table leftIndex $leftIdx and ${orderedEntries.size}" }
 
-        return leftIdx >= 0 && (orderedEntries.size == 1 || leftIdx < orderedEntries.size - 1)
+        return leftIdx >= 0 && (orderedEntries.size == 1 || leftIdx <= orderedEntries.size - 1)
     }
 
     private fun isValueInBlock(valueIndex: Int) = valueIndex >= 0

@@ -16,14 +16,14 @@ storage:
 
     filesystem:
       storage-path: ${STORAGE_PATH:data}
-      type: redis
+      type: lsm
     compression:
       allocatedBufferSize: 4096
       type: deflate
     flush:
-      tableParentDir: /Users/mindtable/ITMO/5-sem/itmo-is25-highload/testRes
+      tableParentDir: Z:\\test
       keyValueDelimiter: ":"
-      blockSizeInBytes: 65536
+      blockSizeInBytes: 150
       entryDelimiter: ";"
       readBufferSize: 4096
     memtable:
