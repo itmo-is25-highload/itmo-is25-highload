@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.itmo.storage.storage.lsm.avl.AVLTree
+import ru.itmo.storage.storage.lsm.core.AVLTree
 
 const val MEMTABLE_FLUSH = "memtable-flush"
 

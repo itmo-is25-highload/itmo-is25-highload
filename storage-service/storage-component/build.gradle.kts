@@ -21,6 +21,7 @@ repositories {
 dependencies {
     // project
     api(project(":storage-service:storage-core"))
+    api(project(":storage-service:storage-lsm-core"))
     api(project(":storage-service:storage-redis"))
     api(project(":storage-service:storage-rpc-proxy"))
 

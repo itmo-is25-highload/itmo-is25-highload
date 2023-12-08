@@ -13,3 +13,4 @@ include("storage-service:storage-rpc-proxy")
 findProject(":storage-service:storage-rpc-proxy")?.name = "storage-rpc-proxy"
 include("storage-service:storage-redis")
 findProject(":storage-service:storage-redis")?.name = "storage-redis"
+include("storage-service:storage-lsm-core")

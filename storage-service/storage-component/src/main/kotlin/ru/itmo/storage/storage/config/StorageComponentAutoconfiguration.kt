@@ -13,16 +13,15 @@ import ru.itmo.storage.storage.local.FileSystemKeyValueRepository
 import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
 import ru.itmo.storage.storage.lsm.DefaultMemtableService
 import ru.itmo.storage.storage.lsm.LsmTreeKeyValueRepository
-import ru.itmo.storage.storage.lsm.properties.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.core.bloomfilter.BloomFilterProperties
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
 import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
 import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
 import ru.itmo.storage.storage.redis.configuration.RedisClusterKeyValueRepositoryConfiguration
 import ru.itmo.storage.storage.redis.configuration.RedisKeyValueRepositoryConfiguration
-import ru.itmo.storage.storage.redis.repository.RedisKeyValueRepository
 import ru.itmo.storage.storage.rpcproxy.config.StorageRpcProxyConfiguration
-import ru.itmo.storage.storage.wal.WalConfig
+import ru.itmo.storage.storage.lsm.core.wal.WalConfig
 
 @EnableAspectJAutoProxy
 @Configuration
