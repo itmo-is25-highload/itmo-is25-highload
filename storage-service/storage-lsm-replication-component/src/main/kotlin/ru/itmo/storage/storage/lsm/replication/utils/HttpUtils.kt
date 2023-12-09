@@ -34,8 +34,7 @@ class HttpUtils {
             for (header in ipHeaders) {
                 val ipList = request.getHeader(header)
                 if (ipList != null && ipList.isNotEmpty() && !"unknown".equals(ipList, ignoreCase = true)) {
-                    val address = ipList.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
-                    return address.replace("0:0:0:0:0:0:0:1", "127.0.0.1")
+                    return ipList.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
                 }
             }
 
