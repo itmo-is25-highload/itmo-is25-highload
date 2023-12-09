@@ -1,5 +1,6 @@
 package ru.itmo.storage.server.controller
 
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.*
@@ -25,7 +26,7 @@ internal class StorageControllerTest(@Autowired val mockMvc: MockMvc) {
     private lateinit var repository: KeyValueRepository
 
     @Test
-    fun `get by key - success`() {
+    fun `get by key - success`() = runBlocking {
         given(repository.get(key)).willReturn(value)
 
         val result = mockMvc.perform(get(path, key))
@@ -38,7 +39,7 @@ internal class StorageControllerTest(@Autowired val mockMvc: MockMvc) {
     }
 
     @Test
-    fun `get by nonexistent key - not found`() {
+    fun `get by nonexistent key - not found`(): Unit = runBlocking {
         given(repository.get(key)).willThrow(KeyNotFoundException(key))
 
         mockMvc.perform(get(path,  key))
