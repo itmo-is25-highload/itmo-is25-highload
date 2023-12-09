@@ -7,9 +7,9 @@
     </appender>
 
     <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${logs.dir:logs}/wal.log</file>
+        <file>${logs.dir:-logs}/wal.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>"${LOGS_DIR:-logs}/%d{yyyy-MM}/wal-%d{MM-dd-yyyy}-%i.log.gz"</fileNamePattern>
+            <fileNamePattern>"${logs.dir:-logs}/%d{yyyy-MM}/wal-%d{MM-dd-yyyy}-%i.log.gz"</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
         </rollingPolicy>
         <encoder>
@@ -17,7 +17,7 @@
         </encoder>
     </appender>
 
-    <logger name="ru.itmo.storage.storage.wal.WalLoggingAspect" additivity="false" level="INFO">
+    <logger name="ru.itmo.storage.storage.lsm.core.wal.WalLoggingAspect" additivity="false" level="INFO">
         <appender-ref ref="ROLLING"/>
     </logger>
     <root level="INFO">
