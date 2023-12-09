@@ -4,9 +4,7 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.runBlocking
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 import ru.itmo.storage.storage.core.KeyValueRepository
 import ru.itmo.storage.storage.lsm.core.AVLTree
 
@@ -22,17 +20,9 @@ class ReplicaController(
         }
     }
 
-    @PostMapping("receive-data")
-    fun receiveWal(
-        @RequestParam("wal") wal: MultipartFile,
-        @RequestParam("sstables") ssTables: List<MultipartFile>) {
-
-        replicationInitializer.addFiles(wal, ssTables)
-        keyValueRepository.reload()
-    }
-
     @PostConstruct
     private fun initialize() {
         replicationInitializer.initialize()
+        keyValueRepository.reload()
     }
 }

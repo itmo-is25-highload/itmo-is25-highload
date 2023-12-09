@@ -28,6 +28,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     // Redis
     implementation("io.lettuce:lettuce-core:6.2.6.RELEASE")

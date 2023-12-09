@@ -2,19 +2,25 @@ package ru.itmo.storage.storage.lsm.replication.replica
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod
+import org.springframework.core.ParameterizedTypeReference
+import org.springframework.core.io.buffer.DataBufferUtils
+import org.springframework.http.ContentDisposition
+import org.springframework.http.MediaType
+import org.springframework.http.codec.multipart.Part
 import org.springframework.stereotype.Component
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.multipart.MultipartFile
+import org.springframework.util.MultiValueMap
+import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.client.WebClient
 import ru.itmo.storage.storage.lsm.replication.common.ReplicaAddress
 import ru.itmo.storage.storage.lsm.replication.exception.MasterUnavailableException
 import java.io.File
 import java.net.InetAddress
+import java.nio.file.Path
+import kotlin.io.path.createDirectories
 
 @Component
 class ReplicationInitializer(
-    private val replicaRestTemplate: RestTemplate
+    private val replicaWebClient: WebClient,
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -29,25 +35,39 @@ class ReplicationInitializer(
 
     fun initialize() {
         log.info { "Initializing replica" }
-        replicaRestTemplate.exchange("/accept-replica", HttpMethod.POST, HttpEntity(getAddress()), String::class.java)
-            .also {
-                if (!it.statusCode.is2xxSuccessful) {
-                    throw MasterUnavailableException()
-                }
-            }
+        val response = replicaWebClient.post()
+            .uri("/accept-replica")
+            .body(BodyInserters.fromValue(getAddress()))
+            .accept(MediaType.MULTIPART_FORM_DATA)
+            .retrieve()
+            .toEntity(object: ParameterizedTypeReference<MultiValueMap<String, Part>>() {})
+            .block()
 
-    }
+        val responseBody = response?.body ?: throw MasterUnavailableException()
 
-    fun addFiles(wal: MultipartFile, ssTables: List<MultipartFile>) {
-        saveMultipartFile(wal, "$logsPath/wal.log")
-        for (ssTable in ssTables) {
-            saveMultipartFile(ssTable, "$ssTablesPath/${ssTable.originalFilename}")
+        val wal = responseBody["wal"]?.get(0) ?: throw MasterUnavailableException()
+        saveFilePart(wal, logsPath)
+        for (sstable in responseBody["sstables"]!!) {
+            saveFilePart(sstable, ssTablesPath)
         }
     }
 
-    private fun saveMultipartFile(multipartFile: MultipartFile, path: String) {
-        val file = File(path)
-        multipartFile.transferTo(file)
+    private fun saveFilePart(part: Part, rootDir: String) {
+        val fileByteArray = getByteArray(part) ?: throw MasterUnavailableException()
+        val filename = part.headers()["Content-Disposition"]?.let { ContentDisposition.parse(it[0]).filename }
+        val path = Path.of("$rootDir/$filename")
+        path.parent?.createDirectories()
+        File(path.toUri()).writeBytes(fileByteArray)
+    }
+
+    private fun getByteArray(part: Part): ByteArray? {
+        return DataBufferUtils.join(part.content())
+            .map {
+                val bytes = ByteArray(it.readableByteCount())
+                it.read(bytes)
+                DataBufferUtils.release(it)
+                bytes
+            }.block()
     }
 
     private fun getAddress(): ReplicaAddress {

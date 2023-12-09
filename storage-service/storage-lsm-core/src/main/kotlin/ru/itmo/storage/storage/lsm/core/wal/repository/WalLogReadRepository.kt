@@ -17,7 +17,7 @@ private val log = KotlinLogging.logger { }
 @Repository
 class WalLogReadRepository {
 
-    @Value("\${logs.dir:logs/wal.log}")
+    @Value("\${logs.dir:logs}/wal.log")
     private lateinit var walPath: String
 
     fun getNonFlushedEntries(): List<AVLTree.Entry> {

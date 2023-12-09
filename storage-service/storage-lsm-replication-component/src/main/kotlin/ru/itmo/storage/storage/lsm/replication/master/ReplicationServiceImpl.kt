@@ -16,7 +16,7 @@ import ru.itmo.storage.storage.lsm.core.sstable.SSTableManager
 import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
+import kotlin.io.path.pathString
 import kotlin.io.path.relativeTo
 
 @Service
@@ -44,6 +44,7 @@ class ReplicationServiceImpl(
                 entity,
                 String::class.java
             )
+
             if (!replicaResponse.statusCode.is2xxSuccessful) {
                 log.error { "Failed to sync with replica $it, status is ${replicaResponse.statusCode}" }
             }
@@ -51,21 +52,9 @@ class ReplicationServiceImpl(
     }
 
 
-    override fun addReplica(replicaAddress: String) {
-        val dataTransitionRequest = createDataTransitionRequest()
-        val replicaResponse = masterReplicationRestTemplate.exchange(
-            getReplicaInitUrl(replicaAddress),
-            HttpMethod.POST,
-            dataTransitionRequest,
-            String::class.java)
-
-        if (replicaResponse.statusCode.is2xxSuccessful) {
-            log.info { "Current state is transferred to replica $replicaAddress" }
-            replicas.add(replicaAddress)
-        } else {
-            log.info { "Failed to transfer initial state to replica $replicaAddress" }
-        }
-
+    override fun addReplica(replicaAddress: String): HttpEntity<MultiValueMap<String, Any>> {
+        replicas.add(replicaAddress)
+        return createDataTransitionRequest()
     }
 
     private fun createDataTransitionRequest(): HttpEntity<MultiValueMap<String, Any>> {
@@ -89,7 +78,7 @@ class ReplicationServiceImpl(
         val contentDisposition: ContentDisposition = ContentDisposition
             .builder("form-data")
             .name(name)
-            .filename(newName.absolutePathString())
+            .filename(newName.pathString)
             .build()
 
         fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
@@ -98,10 +87,6 @@ class ReplicationServiceImpl(
 
     private fun getReplicaSyncUrl(replicaAddress: String): String {
         return "$replicaAddress/sync"
-    }
-
-    private fun getReplicaInitUrl(replicaAddress: String): String {
-        return "$replicaAddress/receive-data"
     }
 
     private fun getTreeEntryHttpEntity(
