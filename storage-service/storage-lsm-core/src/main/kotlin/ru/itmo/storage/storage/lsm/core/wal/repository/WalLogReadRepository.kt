@@ -22,7 +22,8 @@ class WalLogReadRepository {
 
     fun getNonFlushedEntries(): List<AVLTree.Entry> {
         val result = HashMap<String, String>()
-        val lines = File(walPath).readLines()
+        val file = File(walPath)
+        val lines = if (file.exists()) file.readLines() else arrayListOf()
         log.info { File(walPath).absolutePath }
 
         for (i in lines.size - 1 downTo 0) {

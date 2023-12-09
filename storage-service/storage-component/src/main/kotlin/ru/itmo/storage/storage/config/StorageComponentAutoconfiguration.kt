@@ -1,5 +1,6 @@
 package ru.itmo.storage.storage.config
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
@@ -101,8 +102,7 @@ class StorageComponentAutoconfiguration {
     class StorageRpcProxyAutoConfiguration
 
     @Configuration
-    @ConditionalOnProperty(name = ["storage.component.lsm.replication.type"], havingValue = "master", matchIfMissing = true)
-    // TODO  @ConditionalOnExpression
+    @ConditionalOnExpression("'\${storage.component.filesystem.type}'=='lsm' and '\${storage.component.lsm.replication.type:master}'=='master'")
     @Import(
         MasterConfiguration::class,
         MasterController::class,
@@ -112,7 +112,7 @@ class StorageComponentAutoconfiguration {
     class StorageReplicationMasterConfiguration
 
     @Configuration
-    @ConditionalOnProperty(name = ["storage.component.lsm.replication.type"], havingValue = "replica", matchIfMissing = false)
+    @ConditionalOnExpression("'\${storage.component.filesystem.type}'=='lsm' and '\${storage.component.lsm.replication.type:master}'=='replica'")
     @Import(
         ReplicaConfiguration::class,
         ReplicaController::class,
