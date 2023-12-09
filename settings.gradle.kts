@@ -15,3 +15,5 @@ include("storage-service:storage-redis")
 findProject(":storage-service:storage-redis")?.name = "storage-redis"
 include("storage-service:storage-lsm-core")
 findProject(":storage-service:storage-lsm-core")?.name = "storage-lsm-core"
+include("storage-service:storage-lsm-replication-component")
+findProject(":storage-service:storage-lsm-replication-component")?.name = "storage-lsm-replication-component"

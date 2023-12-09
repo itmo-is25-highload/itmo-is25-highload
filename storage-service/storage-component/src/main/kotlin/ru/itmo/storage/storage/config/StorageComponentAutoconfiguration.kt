@@ -14,14 +14,22 @@ import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
 import ru.itmo.storage.storage.lsm.DefaultMemtableService
 import ru.itmo.storage.storage.lsm.LsmTreeKeyValueRepository
 import ru.itmo.storage.storage.lsm.core.bloomfilter.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.core.wal.WalConfig
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
+import ru.itmo.storage.storage.lsm.replication.master.MasterConfiguration
+import ru.itmo.storage.storage.lsm.replication.master.MasterController
+import ru.itmo.storage.storage.lsm.replication.master.ReplicationAspect
+import ru.itmo.storage.storage.lsm.replication.master.ReplicationServiceImpl
+import ru.itmo.storage.storage.lsm.replication.replica.ReplicaConfiguration
+import ru.itmo.storage.storage.lsm.replication.replica.ReplicaController
+import ru.itmo.storage.storage.lsm.replication.replica.ReplicaProperties
+import ru.itmo.storage.storage.lsm.replication.replica.ReplicationInitializer
 import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
 import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
 import ru.itmo.storage.storage.redis.configuration.RedisClusterKeyValueRepositoryConfiguration
 import ru.itmo.storage.storage.redis.configuration.RedisKeyValueRepositoryConfiguration
 import ru.itmo.storage.storage.rpcproxy.config.StorageRpcProxyConfiguration
-import ru.itmo.storage.storage.lsm.core.wal.WalConfig
 
 @EnableAspectJAutoProxy
 @Configuration
@@ -91,4 +99,26 @@ class StorageComponentAutoconfiguration {
         StorageRpcProxyConfiguration::class,
     )
     class StorageRpcProxyAutoConfiguration
+
+    @Configuration
+    @ConditionalOnProperty(name = ["storage.component.lsm.replication.type"], havingValue = "master", matchIfMissing = true)
+    // TODO  @ConditionalOnExpression
+    @Import(
+        MasterConfiguration::class,
+        MasterController::class,
+        ReplicationAspect::class,
+        ReplicationServiceImpl::class
+    )
+    class StorageReplicationMasterConfiguration
+
+    @Configuration
+    @ConditionalOnProperty(name = ["storage.component.lsm.replication.type"], havingValue = "replica", matchIfMissing = false)
+    @Import(
+        ReplicaConfiguration::class,
+        ReplicaController::class,
+        ReplicationInitializer::class
+    )
+    @EnableConfigurationProperties(ReplicaProperties::class)
+    class StorageReplicationReplicaConfiguration
+
 }
