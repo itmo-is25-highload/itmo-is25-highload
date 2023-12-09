@@ -41,7 +41,7 @@ class ReplicationInitializer(
     fun addFiles(wal: MultipartFile, ssTables: List<MultipartFile>) {
         saveMultipartFile(wal, "$logsPath/wal.log")
         for (ssTable in ssTables) {
-            saveMultipartFile(ssTable, "$ssTablesPath/${ssTable.name}")
+            saveMultipartFile(ssTable, "$ssTablesPath/${ssTable.originalFilename}")
         }
     }
 
