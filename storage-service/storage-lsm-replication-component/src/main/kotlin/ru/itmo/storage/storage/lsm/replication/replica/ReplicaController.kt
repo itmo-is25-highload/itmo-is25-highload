@@ -1,5 +1,6 @@
 package ru.itmo.storage.storage.lsm.replication.replica
 
+import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.runBlocking
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -28,5 +29,10 @@ class ReplicaController(
 
         replicationInitializer.addFiles(wal, ssTables)
         keyValueRepository.reload()
+    }
+
+    @PostConstruct
+    private fun initialize() {
+        replicationInitializer.initialize()
     }
 }
