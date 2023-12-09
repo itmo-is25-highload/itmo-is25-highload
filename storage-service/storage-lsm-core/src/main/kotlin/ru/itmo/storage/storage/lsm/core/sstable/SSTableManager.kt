@@ -8,5 +8,6 @@ interface SSTableManager {
     fun getCurrentSSTables(): Deque<SSTable>
     fun findByKey(key: String): String?
     suspend fun saveMemtable(memtable: AVLTree)
+    fun reload()
 //    fun getTables(): Deque<SSTable>
 }

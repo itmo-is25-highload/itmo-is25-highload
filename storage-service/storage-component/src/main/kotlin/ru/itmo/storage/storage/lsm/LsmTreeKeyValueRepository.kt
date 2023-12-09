@@ -55,4 +55,10 @@ class LsmTreeKeyValueRepository(
 
         memTable.upsert(key, value)
     }
+
+    override fun reload() {
+        log.info { "Reloading from disk" }
+        initNonFlushed()
+        ssTableManager.reload()
+    }
 }

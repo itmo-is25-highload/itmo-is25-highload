@@ -27,7 +27,7 @@ class SSTableManagerImpl(
     private val bloomFilterProperties: BloomFilterProperties,
     private val memtableService: MemtableService,
     @Qualifier(MEMTABLE_FLUSH) private val receiveChannel: MutableSharedFlow<AVLTree>,
-    loader: SSTableLoader,
+    private val loader: SSTableLoader,
 ) : SSTableManager {
     // Deque is used in order to extract two oldest tables and insert a new one easily when merging
     // Is sorted by creation time DESC (newest come first) -> no need to copy and reverse when iterating over it
@@ -78,6 +78,15 @@ class SSTableManagerImpl(
             log.info { "Add ssTable to list with $memtable" }
             ssTables.addFirst(SSTable(id, index, bloomFilter.await()))
         }
+    }
+
+    override fun reload() {
+        log.info { "Reloading sstables from disk" }
+
+        this.ssTables = loader.loadTablesSortedByCreationTimeDesc()
+            .toCollection(ArrayDeque())
+
+        log.info { "Collected ${ssTables.joinToString(separator = ", ") { it.id }}" }
     }
 
     private fun findByKeyInTable(table: SSTable, key: String): String? {
