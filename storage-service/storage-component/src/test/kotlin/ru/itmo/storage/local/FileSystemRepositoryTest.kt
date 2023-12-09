@@ -1,5 +1,6 @@
 package ru.itmo.storage.local
 
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -16,12 +17,17 @@ class FileSystemRepositoryTest(
 
     @Test
     fun `set key - success`() {
-        keyValueRepository.set("hello", "hi")
+        runBlocking {
+            keyValueRepository.set("hello", "hi")
+        }
     }
 
     @Test
     fun `get key - success`() {
-        val value = keyValueRepository.get("hello")
+        val value = runBlocking {
+            keyValueRepository.set("hello", "hi")
+            keyValueRepository.get("hello")
+        }
 
         Assertions.assertEquals("hi", value)
     }
@@ -29,7 +35,9 @@ class FileSystemRepositoryTest(
     @Test
     fun `get key - not found`() {
         assertThrows<KeyNotFoundException> {
-            keyValueRepository.get("hi")
+            runBlocking {
+                keyValueRepository.get("hi")
+            }
         }
     }
 }

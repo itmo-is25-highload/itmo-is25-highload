@@ -2,3 +2,4 @@ storage:
   component:
     filesystem:
       storage-path: data2
+      type: local
