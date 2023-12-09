@@ -23,7 +23,7 @@ class ReplicationInitializer(
     @PostConstruct
     private fun initialize() {
         log.info { "Initializing replica" }
-        replicaRestTemplate.exchange("accept-replica", HttpMethod.POST, null, String::class.java)
+        replicaRestTemplate.exchange("/accept-replica", HttpMethod.POST, null, String::class.java)
             .also {
                 if (!it.statusCode.is2xxSuccessful) {
                     throw MasterUnavailableException()
