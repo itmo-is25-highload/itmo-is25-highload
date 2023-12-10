@@ -98,7 +98,8 @@ class StorageComponentAutoconfiguration {
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "rpc-proxy", matchIfMissing = false)
     @Import(
         StorageRpcProxyConfiguration::class,
-        SSTableManagerImpl::class,
+        LsmRepositoryMemtableServiceConfiguration::class,
+        LsmTreeKeyValueRepositorySSTableConfiguration::class,
         )
     class StorageRpcProxyAutoConfiguration
 
