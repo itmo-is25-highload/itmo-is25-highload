@@ -45,8 +45,10 @@ class ReplicationInitializer(
 
         val responseBody = response?.body ?: throw MasterUnavailableException()
 
-        val wal = responseBody["wal"]?.get(0) ?: throw MasterUnavailableException()
-        saveFilePart(wal, logsPath)
+        val wal = responseBody["wal"]?.get(0)
+        if (wal != null) {
+            saveFilePart(wal, logsPath)
+        }
         for (sstable in responseBody["sstables"]!!) {
             saveFilePart(sstable, ssTablesPath)
         }

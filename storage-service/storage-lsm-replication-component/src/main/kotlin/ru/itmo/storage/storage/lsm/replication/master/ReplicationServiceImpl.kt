@@ -61,7 +61,10 @@ class ReplicationServiceImpl(
         val headers = HttpHeaders()
         headers.contentType = MediaType.MULTIPART_FORM_DATA
         val body: MultiValueMap<String, Any> = LinkedMultiValueMap()
-        body.add("wal", getFileEntity("$logsPath/wal.log", "wal", logsPath))
+        val walFileEntity = getFileEntity("$logsPath/wal.log", "wal", logsPath)
+        if (walFileEntity != null) {
+            body.add("wal", walFileEntity)
+        }
         for (ssTable in ssTableManager.getCurrentSSTables()) {
             body.add("sstables", getFileEntity("$ssTablesPath/${ssTable.id}/index", "sstables", ssTablesPath))
             body.add("sstables", getFileEntity("$ssTablesPath/${ssTable.id}/table", "sstables", ssTablesPath))
@@ -70,8 +73,11 @@ class ReplicationServiceImpl(
         return HttpEntity(body, headers)
     }
 
-    private fun getFileEntity(path: String, name: String, parentDir: String): HttpEntity<ByteArray> {
+    private fun getFileEntity(path: String, name: String, parentDir: String): HttpEntity<ByteArray>? {
         val file = File(path)
+        if (!file.exists()) {
+            return null
+        }
 
         val newName = Path(path).relativeTo(Path(parentDir))
         val fileMap: MultiValueMap<String, String> = LinkedMultiValueMap()
