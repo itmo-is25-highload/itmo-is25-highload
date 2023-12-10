@@ -67,6 +67,8 @@ class StorageRpcProxyConfiguration(
     private fun buildWebClient(host: String, port: Int) = WebClient.builder()
         .baseUrl(
             UriComponentsBuilder.newInstance()
+                // TODO
+                .scheme("http")
                 .host(host)
                 .port(port)
                 .build()
