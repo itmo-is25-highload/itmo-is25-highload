@@ -11,11 +11,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
+import ru.itmo.storage.storage.lsm.core.AVLTree
 import ru.itmo.storage.storage.config.MEMTABLE_FLUSH
-import ru.itmo.storage.storage.lsm.MemtableService
-import ru.itmo.storage.storage.lsm.avl.AVLTree
-import ru.itmo.storage.storage.lsm.bloomfilter.BloomFilter
-import ru.itmo.storage.storage.lsm.properties.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.core.MemtableService
+import ru.itmo.storage.storage.lsm.core.bloomfilter.BloomFilter
+import ru.itmo.storage.storage.lsm.core.bloomfilter.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.core.sstable.SSTable
+import ru.itmo.storage.storage.lsm.core.sstable.SSTableLoader
+import ru.itmo.storage.storage.lsm.core.sstable.SSTableManager
 import ru.itmo.storage.storage.core.utils.SearchUtils
 import java.util.*
 
@@ -24,7 +27,7 @@ class SSTableManagerImpl(
     private val bloomFilterProperties: BloomFilterProperties,
     private val memtableService: MemtableService,
     @Qualifier(MEMTABLE_FLUSH) private val receiveChannel: MutableSharedFlow<AVLTree>,
-    loader: SSTableLoader,
+    private val loader: SSTableLoader,
 ) : SSTableManager {
     // Deque is used in order to extract two oldest tables and insert a new one easily when merging
     // Is sorted by creation time DESC (newest come first) -> no need to copy and reverse when iterating over it
@@ -75,6 +78,15 @@ class SSTableManagerImpl(
             log.info { "Add ssTable to list with $memtable" }
             ssTables.addFirst(SSTable(id, index, bloomFilter.await()))
         }
+    }
+
+    override fun reload() {
+        log.info { "Reloading sstables from disk" }
+
+        this.ssTables = loader.loadTablesSortedByCreationTimeDesc()
+            .toCollection(ArrayDeque())
+
+        log.info { "Collected ${ssTables.joinToString(separator = ", ") { it.id }}" }
     }
 
     private fun findByKeyInTable(table: SSTable, key: String): String? {

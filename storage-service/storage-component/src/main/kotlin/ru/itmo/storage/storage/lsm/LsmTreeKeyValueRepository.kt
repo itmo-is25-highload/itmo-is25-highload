@@ -5,14 +5,14 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Repository
+import ru.itmo.storage.storage.lsm.core.AVLTree
 import ru.itmo.storage.storage.core.KeyValueRepository
 import ru.itmo.storage.storage.config.MEMTABLE_FLUSH
 import ru.itmo.storage.storage.core.exception.KeyNotFoundException
-import ru.itmo.storage.storage.lsm.avl.AVLTree
 import ru.itmo.storage.storage.lsm.avl.DefaultAVLTree
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
-import ru.itmo.storage.storage.lsm.sstable.SSTableManager
-import ru.itmo.storage.storage.wal.repository.WalLogReadRepository
+import ru.itmo.storage.storage.lsm.core.sstable.SSTableManager
+import ru.itmo.storage.storage.lsm.core.wal.repository.WalLogReadRepository
 
 @Repository
 class LsmTreeKeyValueRepository(
@@ -54,5 +54,11 @@ class LsmTreeKeyValueRepository(
         }
 
         memTable.upsert(key, value)
+    }
+
+    override fun reload() {
+        log.info { "Reloading from disk" }
+        initNonFlushed()
+        ssTableManager.reload()
     }
 }

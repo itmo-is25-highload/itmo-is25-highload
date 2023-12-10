@@ -2,9 +2,10 @@ package ru.itmo.storage.storage.lsm
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import ru.itmo.storage.storage.lsm.core.AVLTree
+import ru.itmo.storage.storage.lsm.core.MemtableService
 import ru.itmo.storage.storage.compression.CompressionService
 import ru.itmo.storage.storage.identifiers.UniqueIdentifierService
-import ru.itmo.storage.storage.lsm.avl.AVLTree
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream

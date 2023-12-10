@@ -1,6 +1,6 @@
 package ru.itmo.storage.storage.lsm.avl
 
-import ru.itmo.storage.storage.lsm.avl.AVLTree.Entry
+import ru.itmo.storage.storage.lsm.core.AVLTree
 import kotlin.collections.ArrayList
 import kotlin.math.max
 
@@ -56,19 +56,19 @@ class DefaultAVLTree : AVLTree {
         return copy
     }
 
-    override fun orderedEntries(): List<Entry> {
-        val ans: MutableList<Entry> = ArrayList()
+    override fun orderedEntries(): List<AVLTree.Entry> {
+        val ans: MutableList<AVLTree.Entry> = ArrayList()
         inorderTraversal(ans, root)
 
         return ans
     }
 
-    private fun inorderTraversal(entries: MutableList<Entry>, node: Node?) {
+    private fun inorderTraversal(entries: MutableList<AVLTree.Entry>, node: Node?) {
         if (node == null) {
             return
         }
         inorderTraversal(entries, node.leftChild)
-        entries.add(Entry(node.key, node.value))
+        entries.add(AVLTree.Entry(node.key, node.value))
         inorderTraversal(entries, node.rightChild)
     }
 

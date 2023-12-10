@@ -1,5 +1,6 @@
 package ru.itmo.storage.storage.config
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
@@ -13,16 +14,23 @@ import ru.itmo.storage.storage.local.FileSystemKeyValueRepository
 import ru.itmo.storage.storage.local.properties.FileSystemRepositoryProperties
 import ru.itmo.storage.storage.lsm.DefaultMemtableService
 import ru.itmo.storage.storage.lsm.LsmTreeKeyValueRepository
-import ru.itmo.storage.storage.lsm.properties.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.core.bloomfilter.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.core.wal.WalConfig
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import ru.itmo.storage.storage.lsm.properties.LsmTreeRepositoryProperties
+import ru.itmo.storage.storage.lsm.replication.master.MasterConfiguration
+import ru.itmo.storage.storage.lsm.replication.master.MasterController
+import ru.itmo.storage.storage.lsm.replication.master.ReplicationAspect
+import ru.itmo.storage.storage.lsm.replication.master.ReplicationServiceImpl
+import ru.itmo.storage.storage.lsm.replication.replica.ReplicaConfiguration
+import ru.itmo.storage.storage.lsm.replication.replica.ReplicaController
+import ru.itmo.storage.storage.lsm.replication.replica.ReplicaProperties
+import ru.itmo.storage.storage.lsm.replication.replica.ReplicationInitializer
 import ru.itmo.storage.storage.lsm.sstable.LocalSSTableLoader
 import ru.itmo.storage.storage.lsm.sstable.SSTableManagerImpl
 import ru.itmo.storage.storage.redis.configuration.RedisClusterKeyValueRepositoryConfiguration
 import ru.itmo.storage.storage.redis.configuration.RedisKeyValueRepositoryConfiguration
-import ru.itmo.storage.storage.redis.repository.RedisKeyValueRepository
 import ru.itmo.storage.storage.rpcproxy.config.StorageRpcProxyConfiguration
-import ru.itmo.storage.storage.wal.WalConfig
 
 @EnableAspectJAutoProxy
 @Configuration
@@ -90,6 +98,29 @@ class StorageComponentAutoconfiguration {
     @ConditionalOnProperty(name = ["storage.component.filesystem.type"], havingValue = "rpc-proxy", matchIfMissing = false)
     @Import(
         StorageRpcProxyConfiguration::class,
-    )
+        LsmRepositoryMemtableServiceConfiguration::class,
+        LsmTreeKeyValueRepositorySSTableConfiguration::class,
+        )
     class StorageRpcProxyAutoConfiguration
+
+    @Configuration
+    @ConditionalOnExpression("'\${storage.component.filesystem.type}'=='lsm' and '\${storage.component.lsm.replication.type:master}'=='master'")
+    @Import(
+        MasterConfiguration::class,
+        MasterController::class,
+        ReplicationAspect::class,
+        ReplicationServiceImpl::class
+    )
+    class StorageReplicationMasterConfiguration
+
+    @Configuration
+    @ConditionalOnExpression("'\${storage.component.filesystem.type}'=='lsm' and '\${storage.component.lsm.replication.type:master}'=='replica'")
+    @Import(
+        ReplicaConfiguration::class,
+        ReplicaController::class,
+        ReplicationInitializer::class
+    )
+    @EnableConfigurationProperties(ReplicaProperties::class)
+    class StorageReplicationReplicaConfiguration
+
 }

@@ -1,9 +1,11 @@
 package ru.itmo.storage.storage.lsm.sstable
 
 import org.springframework.stereotype.Service
-import ru.itmo.storage.storage.lsm.MemtableService
-import ru.itmo.storage.storage.lsm.bloomfilter.BloomFilter
-import ru.itmo.storage.storage.lsm.properties.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.core.MemtableService
+import ru.itmo.storage.storage.lsm.core.bloomfilter.BloomFilter
+import ru.itmo.storage.storage.lsm.core.bloomfilter.BloomFilterProperties
+import ru.itmo.storage.storage.lsm.core.sstable.SSTable
+import ru.itmo.storage.storage.lsm.core.sstable.SSTableLoader
 import ru.itmo.storage.storage.lsm.properties.LsmRepositoryFlushProperties
 import java.nio.file.Files
 import java.nio.file.Path
