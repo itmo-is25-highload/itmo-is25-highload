@@ -1,9 +1,10 @@
+
 plugins {
     id("java")
 }
 
-group = "ru.itmo"
-version = "1.0-SNAPSHOT"
+group = "ru.itmo.target.server"
+version = "0.0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()

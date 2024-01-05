@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("io.spring.dependency-management") version "1.1.0"
     id("org.springframework.boot") version "3.0.6"
@@ -7,8 +9,9 @@ plugins {
     application
 }
 
-group = "ru.itmo"
-version = "1.0-SNAPSHOT"
+group = "ru.itmo.target.client"
+version = "0.0.1-SNAPSHOT"
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
@@ -42,4 +45,15 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs = listOf("-Xjsr305=strict")
+        jvmTarget = "17"
+    }
+}
+
+application {
+    mainClass.set("ru.itmo.target.client.TargetClientApp")
 }

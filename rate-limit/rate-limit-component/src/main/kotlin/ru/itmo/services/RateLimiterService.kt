@@ -1,4 +1,4 @@
-package ru.itmo.services
+package ru.itmo.ratelimit.component.services
 
 import org.springframework.stereotype.Service
 

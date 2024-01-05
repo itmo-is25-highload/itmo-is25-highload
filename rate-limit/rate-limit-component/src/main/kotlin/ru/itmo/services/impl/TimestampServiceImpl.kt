@@ -1,8 +1,9 @@
-package ru.itmo.services.impl
+package ru.itmo.ratelimit.component.services
 
-import ru.itmo.properties.RateLimitTimeUnit
-import ru.itmo.services.TimestampService
+import org.springframework.stereotype.Service
+import ru.itmo.ratelimit.component.properties.RateLimitTimeUnit
 
+@Service
 class TimestampServiceImpl : TimestampService {
     /*
     @return diff(currentTime - timeStamp) in format of timeUnit

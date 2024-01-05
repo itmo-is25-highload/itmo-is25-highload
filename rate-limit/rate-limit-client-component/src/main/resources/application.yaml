@@ -1,0 +1,2 @@
+services:
+  rate-limiter-endpoint: "localhost:8081"

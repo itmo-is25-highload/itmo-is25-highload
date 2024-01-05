@@ -7,8 +7,9 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.10"
 }
 
-group = "ru.itmo"
-version = "1.0-SNAPSHOT"
+group = "ru.itmo.target"
+version = "0.0.1-SNAPSHOT"
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()

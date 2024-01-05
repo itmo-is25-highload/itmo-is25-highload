@@ -1,15 +1,15 @@
-package ru.itmo.services.impl
+package ru.itmo.ratelimit.component.services
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import ru.itmo.entries.DescriptorLimit
-import ru.itmo.services.RateLimiterConfigurationLookupService
-import ru.itmo.services.RateLimiterService
-import ru.itmo.services.TimestampService
+import org.springframework.stereotype.Service
+import ru.itmo.ratelimit.component.entries.DescriptorLimit
 import ru.itmo.storage.storage.core.KeyValueRepository
 import ru.itmo.storage.storage.core.exception.KeyNotFoundException
 
-class RateLimiterServiceImpl(val configurationLookupService: RateLimiterConfigurationLookupService, val timestampService: TimestampService, val repository: KeyValueRepository) : RateLimiterService {
+@Service
+class RateLimiterServiceImpl(private val configurationLookupService: RateLimiterConfigurationLookupService, private val timestampService: TimestampService, val repository: KeyValueRepository) :
+    RateLimiterService {
     private val log = KotlinLogging.logger { }
 
     override suspend fun limitRequest(key: String, value: String?): Boolean {

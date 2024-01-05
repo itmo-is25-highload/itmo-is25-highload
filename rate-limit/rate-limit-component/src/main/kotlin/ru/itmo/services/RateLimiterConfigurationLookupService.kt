@@ -1,7 +1,7 @@
-package ru.itmo.services
+package ru.itmo.ratelimit.component.services
 
 import org.springframework.stereotype.Service
-import ru.itmo.entries.DescriptorLimit
+import ru.itmo.ratelimit.component.entries.DescriptorLimit
 
 @Service
 interface RateLimiterConfigurationLookupService {

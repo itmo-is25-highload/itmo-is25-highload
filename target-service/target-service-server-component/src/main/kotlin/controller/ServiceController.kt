@@ -1,4 +1,4 @@
-package controller
+package ru.itmo.target.server.controller
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.validation.annotation.Validated

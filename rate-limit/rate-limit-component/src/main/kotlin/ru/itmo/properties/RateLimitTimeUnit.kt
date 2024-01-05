@@ -1,4 +1,4 @@
-package ru.itmo.properties
+package ru.itmo.ratelimit.component.properties
 
 enum class RateLimitTimeUnit {
     Millisecond,

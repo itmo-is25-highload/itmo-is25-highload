@@ -1,12 +1,12 @@
-package ru.itmo.services.impl
+package ru.itmo.ratelimit.component.services
 
-import ru.itmo.config.RatelimiterConfiguration
-import ru.itmo.entries.DescriptorLimit
-import ru.itmo.properties.RateLimitTimeUnit
-import ru.itmo.services.RateLimiterConfigurationLookupService
+import org.springframework.stereotype.Service
+import ru.itmo.ratelimit.RatelimiterConfiguration
+import ru.itmo.ratelimit.component.entries.DescriptorLimit
+import ru.itmo.ratelimit.component.properties.RateLimitTimeUnit
 
-class RateLimiterConfigurationLookupServiceImpl
-(val configuration: RatelimiterConfiguration) : RateLimiterConfigurationLookupService {
+@Service
+class RateLimiterConfigurationLookupServiceImpl(val configuration: RatelimiterConfiguration) : RateLimiterConfigurationLookupService {
     override fun getLimit(key: String, value: String?): DescriptorLimit? {
         val properties = configuration.properties
         val entry = properties.find { x -> x.key == key && x.value == value } ?: return null

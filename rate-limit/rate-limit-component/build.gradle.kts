@@ -8,8 +8,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.10"
 }
 
-group = "ru.itmo"
-version = "1.0-SNAPSHOT"
+group = "ru.itmo.ratelimit.component"
+version = "0.0.1-SNAPSHOT"
+java.sourceCompatibility = JavaVersion.VERSION_17
+
 
 repositories {
     mavenCentral()
@@ -33,6 +35,13 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api:2.20.0")
     implementation("org.apache.logging.log4j:log4j-core:2.20.0")
     implementation("org.apache.logging.log4j:log4j-api-kotlin:1.3.0")
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs = listOf("-Xjsr305=strict")
+        jvmTarget = "17"
+    }
 }
 
 tasks.getByName<Test>("test") {

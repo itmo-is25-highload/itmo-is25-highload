@@ -1,0 +1,88 @@
+spring:
+  quartz:
+    job-store-type: memory
+
+
+storage:
+  component:
+    rpcproxy:
+      shards:
+        redis-shards:
+          - range-end: 2032786155
+            password: kek123
+            master:
+              host: localhost
+              port: 6380
+            slaves:
+              - host: localhost
+                port: 6382
+          - range-end: 4194841934
+            password: kek123
+            master:
+              host: localhost
+              port: 6381
+    redis:
+      host: localhost
+      port: 6380
+      username: redis
+      password: kek123
+    jobs:
+      merge-ss-table:
+        cron: 0/2 * * * * ?  # every 2 seconds
+
+    redis-cluster:
+      nodes:
+        -
+          host: localhost
+          port: 7000
+          username: redis
+          password: bazinga
+        -
+          host: localhost
+          port: 7001
+          username: redis
+          password: bazinga
+        -
+          host: localhost
+          port: 7002
+          username: redis
+          password: bazinga
+
+        -
+          host: localhost
+          port: 7003
+          username: redis
+          password: bazinga
+
+        -
+          host: localhost
+          port: 7004
+          username: redis
+          password: bazinga
+
+        -
+          host: localhost
+          port: 7005
+          username: redis
+          password: bazinga
+
+    filesystem:
+      storage-path: ${STORAGE_PATH:data}
+      type: rpc-proxy
+    compression:
+      allocatedBufferSize: 4096
+      type: deflate
+    flush:
+      tableParentDir: Z:\\test
+      keyValueDelimiter: ":"
+      blockSizeInBytes: 65536
+      entryDelimiter: ";"
+      readBufferSize: 4096
+    memtable:
+      maxSize: 30
+
+debug: true
+
+logging:
+  level:
+    io.lettuce.*: trace

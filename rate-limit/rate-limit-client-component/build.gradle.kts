@@ -9,8 +9,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.10"
 }
 
-group = "ru.itmo"
-version = "1.0-SNAPSHOT"
+group = "ru.itmo.ratelimit.client"
+version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
@@ -42,14 +42,18 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 }
 
+tasks.getByName<Test>("test") {
+    useJUnitPlatform()
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar>
+    {
+        enabled = false
+    }
+
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "17"
     }
 }
-
-tasks.getByName<Test>("test") {
-    useJUnitPlatform()
-}
-

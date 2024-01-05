@@ -1,8 +1,8 @@
-package ru.itmo.properties
+package ru.itmo.ratelimit.component.properties
 
 data class RatelimiterPropertiesEntry(
-    val key: String,
-    val value: String?,
-    val unit: RateLimitTimeUnit,
-    val requests_per_unit: Long,
+    var key: String,
+    var value: String?,
+    var unit: RateLimitTimeUnit,
+    var requests_per_unit: Long,
 )
