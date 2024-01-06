@@ -1,12 +1,12 @@
 package ru.itmo.target.client.commands.griddy
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import picocli.CommandLine.Command
 import ru.itmo.target.client.TargetServiceClient
 import java.util.concurrent.Callable
 
-@Service
+@Component
 @Command(name = "devious")
 class DeviousGriddyCommand(private val client: TargetServiceClient) : Callable<Int> {
     private val log = KotlinLogging.logger { }

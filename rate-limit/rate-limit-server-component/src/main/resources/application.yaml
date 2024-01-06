@@ -68,7 +68,7 @@ storage:
 
     filesystem:
       storage-path: ${STORAGE_PATH:data}
-      type: rpc-proxy
+      type: lsm
     compression:
       allocatedBufferSize: 4096
       type: deflate

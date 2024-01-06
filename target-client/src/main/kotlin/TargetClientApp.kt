@@ -1,4 +1,4 @@
-package ru.itmo.target.client
+package ru.itmo
 
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.ExitCodeGenerator
@@ -15,10 +15,6 @@ class TargetClientApp(
 
     private var exitCode: Int = 0
 
-    fun main(args: Array<String>) {
-        runApplication<TargetClientApp>(*args)
-    }
-
     override fun run(vararg args: String?) {
         exitCode = CommandLine(rootCommand, factory).execute(*args)
     }
@@ -26,4 +22,8 @@ class TargetClientApp(
     override fun getExitCode(): Int {
         return exitCode
     }
+}
+
+fun main(args: Array<String>) {
+    runApplication<TargetClientApp>(*args)
 }

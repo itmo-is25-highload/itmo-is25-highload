@@ -24,6 +24,8 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 
     api(project(":rate-limit:rate-limit-component"))
+    api(project(":storage-service:storage-component"))
+    api(project(":storage-service:storage-rpc-proxy"))
 
     // Spring boot
     implementation("org.springframework.boot:spring-boot-starter")

@@ -10,7 +10,7 @@ import ru.itmo.ratelimit.client.configuration.RateLimiterClientProperties
 class RateLimiterClientImpl(private val webClient: WebClient, private val properties: RateLimiterClientProperties) : RateLimiterClient {
     override fun limit(key: String, value: String?): Boolean {
         val requestSpec = webClient.get()
-            .uri { uriBuilder -> uriBuilder.path(properties.Url).queryParam("value", value).build(key) }
+            .uri { uriBuilder -> uriBuilder.queryParam("value", value).build(key) }
             .retrieve()
             .bodyToMono<Boolean>()
             .block()

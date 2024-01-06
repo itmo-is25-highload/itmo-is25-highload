@@ -27,6 +27,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 
     api(project(":rate-limit:rate-limit-client-component"))
+    api(project(":common"))
 
     // Spring boot
     implementation("org.springframework.boot:spring-boot-starter")
@@ -55,5 +56,5 @@ tasks.withType<KotlinCompile> {
 }
 
 application {
-    mainClass.set("ru.itmo.target.server.TargetServiceApp")
+    mainClass.set("ru.itmo.TargetServiceAppKt")
 }

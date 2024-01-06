@@ -1,11 +1,14 @@
 package ru.itmo.ratelimit
 
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.PropertySource
+import ru.itmo.common.configuration.properties.YamlPropertySourceFactory
 import ru.itmo.ratelimit.component.properties.RatelimiterPropertiesEntry
 
-@EnableConfigurationProperties(RatelimiterConfiguration::class)
-@ConfigurationProperties("descriptors")
+@Configuration
+@PropertySource("classpath:rate-limiter-config.yaml", factory = YamlPropertySourceFactory::class)
+@ConfigurationProperties(prefix = "descriptors")
 class RatelimiterConfiguration {
     lateinit var properties: List<RatelimiterPropertiesEntry>
 }

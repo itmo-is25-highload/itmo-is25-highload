@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 RUN chmod +x ./gradlew \
-    && ./gradlew -p ./rate-limit-server-component bootJar
+    && ./gradlew -p ./rate-limit/rate-limit-server-component bootJar
 
 FROM amazoncorretto:17-al2023-headless
 

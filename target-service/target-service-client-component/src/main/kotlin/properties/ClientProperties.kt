@@ -1,8 +1,11 @@
 package ru.itmo.target.properties
 
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.PropertySource
+import org.springframework.stereotype.Component
+import ru.itmo.common.configuration.properties.YamlPropertySourceFactory
 
-@EnableConfigurationProperties(ClientProperties::class)
-@ConfigurationProperties("services.target-service-endpoint")
-class ClientProperties(var serviceUrl: String)
+@ConfigurationProperties(prefix = "services.target-service-endpoint")
+@PropertySource("classpath:target-client-properties.yaml", factory = YamlPropertySourceFactory::class)
+@Component
+class ClientProperties { lateinit var url: String }

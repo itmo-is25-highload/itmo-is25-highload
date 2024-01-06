@@ -23,6 +23,7 @@ dependencies {
 
     api(project(":storage-service:storage-rpc-proxy"))
     api(project(":storage-service:storage-core"))
+    api(project(":common"))
 
     // Spring boot
     implementation("org.springframework.boot:spring-boot-starter")
@@ -42,6 +43,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "17"
     }
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar>
+{
+    enabled = false
 }
 
 tasks.getByName<Test>("test") {

@@ -2,10 +2,10 @@ FROM amazoncorretto:17-al2023-headless as builder
 
 WORKDIR /app
 
-COPY target-service-server-component .
+COPY . .
 
 RUN chmod +x ./gradlew \
-    && ./gradlew -p ./target-service-server-component bootJar
+    && ./gradlew -p ./target-service/target-service-server-component bootJar
 
 FROM amazoncorretto:17-al2023-headless
 

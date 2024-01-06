@@ -9,7 +9,7 @@ plugins {
     application
 }
 
-group = "ru.itmo.target.client"
+group = "ru.itmo"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
@@ -55,5 +55,5 @@ tasks.withType<KotlinCompile> {
 }
 
 application {
-    mainClass.set("ru.itmo.target.client.TargetClientApp")
+    mainClass.set("ru.itmo.TargetClientAppKt")
 }

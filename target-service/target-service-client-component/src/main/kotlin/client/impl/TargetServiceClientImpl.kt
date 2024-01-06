@@ -6,11 +6,11 @@ import ru.itmo.target.client.TargetServiceClient
 import ru.itmo.target.properties.ClientProperties
 
 @Component
-class TargetServiceClientImpl(private val client: WebClient, private val properties: ClientProperties) :
+class TargetServiceClientImpl(private val client: WebClient) :
     TargetServiceClient {
     override fun deviousGriddy(): String {
         return client.get()
-            .uri { uriBuilder -> uriBuilder.path(properties.serviceUrl).path("/griddy/devious").build() }
+            .uri { uriBuilder -> uriBuilder.path("/griddy/devious").build() }
             .retrieve()
             .bodyToMono(String::class.java)
             .block()!!
@@ -18,7 +18,7 @@ class TargetServiceClientImpl(private val client: WebClient, private val propert
 
     override fun mcGriddy(): String {
         return client.get()
-            .uri { uriBuilder -> uriBuilder.path(properties.serviceUrl).path("/griddy/mc").build() }
+            .uri { uriBuilder -> uriBuilder.path("/griddy/mc").build() }
             .retrieve()
             .bodyToMono(String::class.java)
             .block()!!

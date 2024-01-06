@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 RUN chmod +x ./gradlew \
-    && ./gradlew bootJar
+    && ./gradlew -p ./target-client bootJar
 
 FROM amazoncorretto:17-al2023-headless
 

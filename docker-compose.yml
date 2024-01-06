@@ -1,11 +1,11 @@
 version: "3"
 
 services:
-  rate-limit:
+  rate-limiter:
     ports:
       - "8080:8080"
 
-    image: rate-limit:0.0.1
+    image: rate-limiter:0.0.1
 
   target-client:
     stdin_open: true

@@ -30,3 +30,5 @@ findProject(":target-service:target-service-server-component")?.name = "target-s
 include("target-service:target-service-client-component")
 findProject(":target-service:target-service-client-component")?.name = "target-service-client-component"
 include("target-client")
+include("common")
+

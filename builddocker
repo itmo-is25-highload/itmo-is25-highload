@@ -1,6 +1,7 @@
 #!/bin/sh
 
-docker build -t storage-service:0.0.1  -f ./storage-service/Dockerfile . \
-&& docker build  -t client:0.0.1 -f ./client/Dockerfile . \
+docker build -t rate-limiter:0.0.1  -f ./rate-limit/Dockerfile . \
+&& docker build  -t target-client:0.0.1 -f ./target-client/Dockerfile . \
+&& docker build -t target-service:0.0.1 -f ./target-service/Dockerfile . \
 && docker compose build \
 && docker compose up
