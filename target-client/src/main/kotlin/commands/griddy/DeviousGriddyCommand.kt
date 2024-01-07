@@ -16,6 +16,8 @@ class DeviousGriddyCommand(private val client: TargetServiceClient) : Callable<I
 
         client.deviousGriddy()
 
+        log.info { "Hit dat devious griddy" }
+
         return 0
     }
 }

@@ -26,6 +26,7 @@ dependencies {
     api(project(":rate-limit:rate-limit-component"))
     api(project(":storage-service:storage-component"))
     api(project(":storage-service:storage-rpc-proxy"))
+    api(project(":common"))
 
     // Spring boot
     implementation("org.springframework.boot:spring-boot-starter")

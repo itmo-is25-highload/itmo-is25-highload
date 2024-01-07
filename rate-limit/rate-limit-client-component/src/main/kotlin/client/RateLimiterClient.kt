@@ -1,5 +1,9 @@
 package ru.itmo.ratelimit.client
 
+import ru.itmo.contracts.ratelimit.RateLimiterResponse
+
 interface RateLimiterClient {
-    fun limit(key: String, value: String?): Boolean
+    fun checkLimit(key: String, value: String?): RateLimiterResponse
+
+    fun incrementLimit(key: String, value: String?): Any
 }

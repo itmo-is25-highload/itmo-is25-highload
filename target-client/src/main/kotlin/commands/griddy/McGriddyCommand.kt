@@ -16,6 +16,8 @@ class McGriddyCommand(private val client: TargetServiceClient) : Callable<Int> {
 
         client.mcGriddy()
 
+        log.info { "Hit dat mc griddy" }
+
         return 0
     }
 }

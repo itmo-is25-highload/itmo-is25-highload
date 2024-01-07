@@ -1,14 +1,11 @@
-descriptors:
-  - key: userIP
-    unit: Second
-    requests_per_unit: 20
+limit:
+  descriptors:
+    - key: UserIP
+      value: "127.0.0.1"
+      unit: Hour
+      requests_per_unit: 3
 
-  - key: userIP
-    value: "127.0.0.1"
-    unit: Minute
-    requests_per_unit: 100
-
-  - key: endpointUrl
-    value: "/griddy/devious"
-    unit: Minute
-    requests_per_unit: 10
+    - key: EndpointUrl
+      value: "/griddy/devious"
+      unit: Hour
+      requests_per_unit: 1

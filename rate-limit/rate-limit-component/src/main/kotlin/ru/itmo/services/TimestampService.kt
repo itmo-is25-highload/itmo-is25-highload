@@ -8,5 +8,11 @@ import ru.itmo.ratelimit.component.properties.RateLimitTimeUnit
 interface TimestampService {
     fun getDiffWithCurrentTime(timeStamp: String, timeUnit: RateLimitTimeUnit): Long
 
+    fun getNextLimitReset(
+        timeStamp: String,
+        timeStampTimeUnit: RateLimitTimeUnit,
+        resultTimeUnit: RateLimitTimeUnit = RateLimitTimeUnit.Second,
+    ): Long
+
     fun getCurrentTime(timeUnit: RateLimitTimeUnit): Long
 }

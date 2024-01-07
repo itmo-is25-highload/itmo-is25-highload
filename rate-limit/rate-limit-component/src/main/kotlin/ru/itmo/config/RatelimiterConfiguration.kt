@@ -8,7 +8,7 @@ import ru.itmo.ratelimit.component.properties.RatelimiterPropertiesEntry
 
 @Configuration
 @PropertySource("classpath:rate-limiter-config.yaml", factory = YamlPropertySourceFactory::class)
-@ConfigurationProperties(prefix = "descriptors")
+@ConfigurationProperties(prefix = "limit")
 class RatelimiterConfiguration {
-    lateinit var properties: List<RatelimiterPropertiesEntry>
+    lateinit var descriptors: Collection<RatelimiterPropertiesEntry>
 }

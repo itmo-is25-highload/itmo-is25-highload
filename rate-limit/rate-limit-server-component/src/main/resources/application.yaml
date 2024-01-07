@@ -79,7 +79,7 @@ storage:
       entryDelimiter: ";"
       readBufferSize: 4096
     memtable:
-      maxSize: 30
+      maxSize: 65536
 
 debug: true
 
