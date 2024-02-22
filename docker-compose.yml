@@ -1,18 +1,24 @@
 version: "3"
 
 services:
-  storage:
+  rate-limiter:
     ports:
       - "8080:8080"
 
-    image:
-      storage-service:0.0.1
+    image: rate-limiter:0.0.1
 
-  client:
+  target-client:
     stdin_open: true
     tty: true
-    image: client:0.0.1
+    image: target-client:0.0.1
     environment:
       STORAGE_CLIENT_BASE_PATH: http://storage:8080
+
+  target-service:
+    ports:
+      - "8081:8081"
+
+    image: target-service:0.0.1
+
 
 
